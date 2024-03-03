@@ -2,12 +2,12 @@ import useRoomCreate from "../hooks/useRoomCreate";
 const Home = () => {
   const [
     information,
-    setInformation,
+    ,
     handleCreateNewRoom,
     handleChangeRoomId,
     handleChangeUsername,
     handleCreateOrJoinRoom,
-    navigate,
+    ,
     handleKeyUp,
   ] = useRoomCreate();
   return (

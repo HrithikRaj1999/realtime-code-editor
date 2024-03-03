@@ -1,9 +1,4 @@
-import {
-  ChangeEvent,
-  Dispatch,
-  KeyboardEventHandler,
-  MouseEvent, SetStateAction
-} from "react";
+import { ChangeEvent, Dispatch, MouseEvent, SetStateAction } from "react";
 import { NavigateFunction } from "react-router-dom";
 export interface InformationTypes {
   roomId: string;
@@ -19,5 +14,10 @@ export type UseRoomCreateReturn = [
   (e: ChangeEvent<HTMLInputElement>) => void,
   () => void,
   NavigateFunction,
-  (e: React.KeyboardEvent<HTMLInputElement>)=>void
+  (e: React.KeyboardEvent<HTMLInputElement>) => void
 ];
+
+export interface Avatarprops {
+  username: string;
+  socketId: number;
+}

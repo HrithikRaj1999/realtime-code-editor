@@ -1,17 +1,13 @@
 import React from "react";
 import Avatar from "react-avatar";
+import { Avatarprops } from "../utils/types";
 
-interface Avatarprops {
-  username: string;
-  socketId: number;
-}
+
 const Client = ({ username, socketId }: Avatarprops) => {
   return (
-    <div className="flex flex-col items-center">
-      <Avatar name={username} size="50" round="30px" />
-      <span className="username text-nowrap text-white font-mono font-medium">
-        {username}
-      </span>
+    <div className="flex flex-col">
+      <Avatar name={username} size="50" round="30px" textSizeRatio={2} />
+      <span className=" text-white  font-medium">{username}</span>
     </div>
   );
 };

@@ -3,7 +3,7 @@ import Client from "./Client";
 import CodeEditor from "./CodeEditor";
 
 const Editorpage = () => {
-  const [clients, setClients] = useState([
+  const [clients] = useState([
     {
       username: "Haju",
       socketId: 1,
@@ -15,25 +15,28 @@ const Editorpage = () => {
   ]);
   return (
     <div className="flex flex-row min-h-screen ">
-      <section className="px-3 bg-black flex flex-col items-start gap-y-3 w-1/4">
+      <section className="min-w-[300px] px-3 bg-black flex flex-col items-start gap-y-3 w-1/4">
         <div className="flex flex-wrap gap-x-2 justify-center items-center m-2">
           <img
             src="/logo.JPEG"
-            className="w-[50px] h-[50px] rounded-[50%] overflow-hidden relative inline-block"
+            className="w-[100px] h-[100px] rounded-[50%]  border-hidden"
             alt="logo"
           />
-          <div className="  text-white text-wrap">Real Time Code Editor</div>
+          <span className=" text-white text-nowrap">
+            Collaborative Code Editor
+          </span>
         </div>
-        <div className="flex flex-wrap gap-x-2 justify-center  items-center">
+
+        <div className="flex flex-row gap-x-2 p-1 justify-center items-center">
           {clients?.map((client) => (
             <Client key={client.socketId} {...client} />
           ))}
         </div>
-        <div className="flex flex-col justify-center gap-y-2">
-          <button className="border-3 w-[50px] sm:w-[100px] md:w-[150px] text-sm sm:text-md md:text-xl bg-green-500 rounded-full p-2 text-white">
+        <div className="flex flex-wrap gap-x-2 justify-center gap-y-2 text-white">
+          <button className=" sm:w-[100px] md:w-[150px]  text-xl bg-green-500 rounded-xl p-2 ">
             Copy Room Id
           </button>
-          <button className="border-3 w-[50px] sm:w-[100px] md:w-[150px] text-sm sm:text-md md:text-xl bg-red-700 rounded-full p-2 text-white">
+          <button className="sm:w-[100px] md:w-[150px] text-xl bg-red-700 rounded-xl p-2">
             Leave Room
           </button>
         </div>
