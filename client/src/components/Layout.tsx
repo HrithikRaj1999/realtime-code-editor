@@ -1,7 +1,8 @@
-import React, { PropsWithChildren } from "react";
+import { PropsWithChildren } from "react";
+import ClientSocketProvider from "../context/SocketContext";
 
 const Layout = ({ children }: PropsWithChildren) => {
-  return <>{children}</>;
+  return <ClientSocketProvider>{children}</ClientSocketProvider>;
 };
 
 export default Layout;

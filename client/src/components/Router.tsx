@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from "react";
+import { Suspense, lazy } from "react";
 import { createBrowserRouter } from "react-router-dom";
 import Layout from "./Layout";
 
@@ -16,7 +16,7 @@ const appRouter = createBrowserRouter([
     ),
   },
   {
-    path: "/editor/:roomId",
+    path: "/editor/:roomId/:username",
     element: (
       <Suspense fallback={<h1>Loading...</h1>}>
         <Layout>

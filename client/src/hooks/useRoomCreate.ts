@@ -41,7 +41,7 @@ const useRoomCreate = (): UseRoomCreateReturn => {
     if (!information.username.length) {
       toast.error("Please enter a username");
     } else {
-      navigate(`/editor/${information.roomId}`, {
+      navigate(`/editor/${information.roomId}/${information.username}`, {
         state: { username: information.username },
       });
       toast.success(
@@ -49,7 +49,7 @@ const useRoomCreate = (): UseRoomCreateReturn => {
       );
     }
   };
-  const handleKeyUp = (e:  React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.code === "Enter") {
       handleCreateOrJoinRoom();
     }
@@ -62,7 +62,7 @@ const useRoomCreate = (): UseRoomCreateReturn => {
     handleChangeUsername,
     handleCreateOrJoinRoom,
     navigate,
-    handleKeyUp
+    handleKeyUp,
   ];
 };
 

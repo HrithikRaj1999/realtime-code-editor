@@ -1,18 +1,15 @@
-import { useState } from "react";
 import Client from "./Client";
 import CodeEditor from "./CodeEditor";
+import { useSocketContext } from "../context/SocketContext";
+import { Navigate, useLocation } from "react-router-dom";
+import useEditorManipulation from "../hooks/useEditorManipulation";
 
 const Editorpage = () => {
-  const [clients] = useState([
-    {
-      username: "Haju",
-      socketId: 1,
-    },
-    {
-      username: "Rastogi",
-      socketId: 2,
-    },
-  ]);
+  const { socket, clients, setClients } = useSocketContext();
+  const location = useLocation();
+  useEditorManipulation({ socket, clients, setClients });
+
+  if (!location.state) return <Navigate to="/" />;
   return (
     <div className="flex flex-row min-h-screen ">
       <section className="min-w-[300px] px-3 bg-black flex flex-col items-start gap-y-3 w-1/4">
