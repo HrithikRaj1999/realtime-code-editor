@@ -23,7 +23,10 @@ io.on("connection", (socket) => {
   );
   //when a user changing code
   socket.on(ACTIONS.CODE_CHANGE, ({ roomId, code }) => {
-    SOCKET_ACTION_PAIR[ACTIONS.CODE_CHANGE]({io, roomId, code});
+    SOCKET_ACTION_PAIR[ACTIONS.CODE_CHANGE]({ io, roomId, code });
+  });
+  socket.on(ACTIONS.LEAVE, () => {
+    SOCKET_ACTION_PAIR[ACTIONS.LEAVE](socket);
   });
 });
 

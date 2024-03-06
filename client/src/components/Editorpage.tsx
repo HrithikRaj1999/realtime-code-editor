@@ -7,7 +7,11 @@ import useEditorManipulation from "../hooks/useEditorManipulation";
 const Editorpage = () => {
   const { socket, clients, setClients } = useSocketContext();
   const location = useLocation();
-  useEditorManipulation({ socket, clients, setClients });
+  const { handleCopyRoomId,handleLeaveRoom } = useEditorManipulation({
+    socket,
+    clients,
+    setClients,
+  });
   const { roomId } = useParams();
   if (!location.state) return <Navigate to="/" />;
   return (
@@ -30,10 +34,13 @@ const Editorpage = () => {
           ))}
         </div>
         <div className="flex flex-wrap gap-x-2 justify-center gap-y-2 text-white">
-          <button className=" sm:w-[100px] md:w-[150px]  text-xl bg-green-500 rounded-xl p-2 ">
+          <button
+            onClick={handleCopyRoomId}
+            className=" sm:w-[100px] md:w-[150px]  text-xl bg-green-500 rounded-xl p-2 "
+          >
             Copy Room Id
           </button>
-          <button className="sm:w-[100px] md:w-[150px] text-xl bg-red-700 rounded-xl p-2">
+          <button onClick={handleLeaveRoom} className="sm:w-[100px] md:w-[150px] text-xl bg-red-700 rounded-xl p-2">
             Leave Room
           </button>
         </div>

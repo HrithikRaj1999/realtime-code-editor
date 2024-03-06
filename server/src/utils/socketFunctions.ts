@@ -4,6 +4,7 @@ import {
   ACTION_CODE_CHANGE,
   ACTION_DISCONNECT,
   ACTION_JOIN,
+  ACTION_LEAVE,
   PairType,
 } from "./type";
 import { Socket } from "socket.io";
@@ -26,7 +27,7 @@ export const SOCKET_ACTION_PAIR: PairType = {
   [ACTIONS.JOIN]: ({ socket, roomId, username, io }: ACTION_JOIN) => {
     if (socket && username && roomId && io) {
       socket.join(roomId);
-      //get allt he connected clients
+      //get all the connected clients
       const clients = getAllClients(io, roomId);
       clients.forEach(({ socketId }) => {
         io.to(socketId).emit(ACTIONS.JOINED, {
@@ -39,12 +40,29 @@ export const SOCKET_ACTION_PAIR: PairType = {
       socketDict.addUser(socket.id, username);
     }
   },
+  [ACTIONS.LEAVE]: ( socket : ACTION_LEAVE) => {
+    if (socket) {
+      const rooms = [...socket.rooms]; //get all the rooms that user is connected to
+      //make that user with socket id to leave all the rooms in which they are connected to
+      rooms.forEach((roomId) => {
+        //emmit message to client
+        console.log(`${socketDict.getUserName(socket.id)}is disconneted`);
+        socket.to(roomId).emit(ACTIONS.DISCONNECTED, {
+          socketId: socket.id,
+          username: socketDict.getUserName(socket.id),
+        });
+        socket.leave(roomId); //officially leave
+      });
+      socketDict.removeUser(socket.id);
+    }
+  },
   [ACTIONS.DISCONNECTING]: (socket: ACTION_DISCONNECT) => {
     if (socket) {
       const rooms = [...socket.rooms]; //get all the rooms that user is connected to
       //make that user with socket id to leave all the rooms in which they are connected to
       rooms.forEach((roomId) => {
         //emmit message to client
+        console.log(`${socketDict.getUserName(socket.id)}is disconneted`);
         socket.to(roomId).emit(ACTIONS.DISCONNECTED, {
           socketId: socket.id,
           username: socketDict.getUserName(socket.id),

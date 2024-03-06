@@ -34,3 +34,9 @@ export type ACTION_CODE_CHANGE = {
   code: string;
   io: any;
 };
+export type ACTION_LEAVE = Socket<
+  DefaultEventsMap,
+  DefaultEventsMap,
+  DefaultEventsMap,
+  any
+>;

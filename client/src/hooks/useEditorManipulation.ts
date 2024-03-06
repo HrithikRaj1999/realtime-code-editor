@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import ACTIONS from "../constants/constants";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   HandleLeave,
@@ -15,6 +15,16 @@ export default function useEditorManipulation({
 }: UseEditorParamsTypes) {
   const location = useLocation();
   const params = useParams();
+  const navigate = useNavigate();
+  const handleCopyRoomId = () => {
+    navigator.clipboard.writeText(params.roomId!);
+    toast.success("Room ID Copied to Clipboard");
+  };
+
+  const handleLeaveRoom = () => {
+    socket.emit(ACTIONS.LEAVE);
+    navigate("/");
+  };
   useEffect(() => {
     socket.emit(ACTIONS.JOIN, {
       roomId: params.roomId,
@@ -29,7 +39,6 @@ export default function useEditorManipulation({
     };
     const handleLeave = ({ username, socketId }: HandleLeave) => {
       toast.success(`${username} Left the room`);
-
       setClients((prev) => {
         return prev.filter((client) => client.socketId !== socketId);
       });
@@ -41,5 +50,5 @@ export default function useEditorManipulation({
       socket.off(ACTIONS.DISCONNECTED);
     };
   }, []);
-  return {};
+  return { handleCopyRoomId, handleLeaveRoom };
 }
