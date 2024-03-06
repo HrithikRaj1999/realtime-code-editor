@@ -1,6 +1,13 @@
 import ACTIONS from "./constants";
 import SocketIdManager from "./../Services/SocketIdManager";
-import { PairType } from "./type";
+import {
+  ACTION_CODE_CHANGE,
+  ACTION_DISCONNECT,
+  ACTION_JOIN,
+  PairType,
+} from "./type";
+import { Socket } from "socket.io";
+import { DefaultEventsMap } from "socket.io/dist/typed-events";
 const socketDict = SocketIdManager.getInstance();
 
 //any needs to be corrected
@@ -16,7 +23,7 @@ export const getAllClients = (io: any, roomId: string) => {
 };
 
 export const SOCKET_ACTION_PAIR: PairType = {
-  [ACTIONS.JOIN]: (socket, roomId, username, io) => {
+  [ACTIONS.JOIN]: ({ socket, roomId, username, io }: ACTION_JOIN) => {
     if (socket && username && roomId && io) {
       socket.join(roomId);
       //get allt he connected clients
@@ -32,8 +39,7 @@ export const SOCKET_ACTION_PAIR: PairType = {
       socketDict.addUser(socket.id, username);
     }
   },
-
-  [ACTIONS.DISCONNECTING]: (socket) => {
+  [ACTIONS.DISCONNECTING]: (socket: ACTION_DISCONNECT) => {
     if (socket) {
       const rooms = [...socket.rooms]; //get all the rooms that user is connected to
       //make that user with socket id to leave all the rooms in which they are connected to
@@ -47,5 +53,8 @@ export const SOCKET_ACTION_PAIR: PairType = {
       });
       socketDict.removeUser(socket.id);
     }
+  },
+  [ACTIONS.CODE_CHANGE]: ({ io, roomId, code }: ACTION_CODE_CHANGE) => {
+    io?.to(roomId!).emit(ACTIONS.CODE_CHANGE, code);
   },
 };

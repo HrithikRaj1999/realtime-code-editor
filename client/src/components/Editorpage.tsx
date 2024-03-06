@@ -1,14 +1,14 @@
 import Client from "./Client";
 import CodeEditor from "./CodeEditor";
 import { useSocketContext } from "../context/SocketContext";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation, useParams } from "react-router-dom";
 import useEditorManipulation from "../hooks/useEditorManipulation";
 
 const Editorpage = () => {
   const { socket, clients, setClients } = useSocketContext();
   const location = useLocation();
   useEditorManipulation({ socket, clients, setClients });
-
+  const { roomId } = useParams();
   if (!location.state) return <Navigate to="/" />;
   return (
     <div className="flex flex-row min-h-screen ">
@@ -39,7 +39,7 @@ const Editorpage = () => {
         </div>
       </section>
       <section className="flex flex-1 justify-center items-center">
-        <CodeEditor />
+        <CodeEditor {...{ roomId }} />
       </section>
     </div>
   );
