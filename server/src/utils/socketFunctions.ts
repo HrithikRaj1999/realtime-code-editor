@@ -19,7 +19,7 @@ export const getAllClients = (io: any, roomId: string) => {
         socketId: socketId,
         username: socketDict.getUserName(socketId),
       };
-    }
+    },
   );
 };
 
@@ -61,8 +61,8 @@ export const SOCKET_ACTION_PAIR: PairType = {
         // Skip the default room with the socket's own ID
         console.log(
           `${socketDict.getUserName(
-            socket.id
-          )} is disconnected from room ${roomId}`
+            socket.id,
+          )} is disconnected from room ${roomId}`,
         );
         socket.to(roomId).emit(ACTIONS.DISCONNECTED, {
           socketId: socket.id,

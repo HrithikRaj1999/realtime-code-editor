@@ -5,7 +5,7 @@ import ACTIONS from "../constants/constants";
 import { useParams } from "react-router-dom";
 
 const useCodeEditorPanelManipulation = (
-  socket: Socket<DefaultEventsMap, DefaultEventsMap>
+  socket: Socket<DefaultEventsMap, DefaultEventsMap>,
 ) => {
   const [code, setCode] = useState("hello world");
   const handleCodeChange = (code: string) => {

@@ -9,7 +9,7 @@ const ClientSocket = createContext({} as SocketContextType);
 const ClientSocketProvider = (props: propsType) => {
   const { children } = props;
   const [socket, setSocket] = useState<Socket>(
-    io(process.env.REACT_APP_SOCKET_URL!, OPTIONS)
+    io(process.env.REACT_APP_SOCKET_URL!, OPTIONS),
   );
   const { clients, setClients } = useSockets(socket, setSocket);
   return (

@@ -13,7 +13,7 @@ const useRoomCreate = (): UseRoomCreateReturn => {
     isCreateRoom: false,
   });
   const handleCreateNewRoom = (
-    e: MouseEvent<HTMLElement, globalThis.MouseEvent>
+    e: MouseEvent<HTMLElement, globalThis.MouseEvent>,
   ) => {
     setInformation((prev) => ({
       ...prev,
@@ -45,7 +45,7 @@ const useRoomCreate = (): UseRoomCreateReturn => {
         state: { username: information.username },
       });
       toast.success(
-        information.isCreateRoom ? "Room created" : "you joined a room "
+        information.isCreateRoom ? "Room created" : "you joined a room ",
       );
     }
   };

@@ -2,7 +2,6 @@ import React from "react";
 import Avatar from "react-avatar";
 import { Avatarprops } from "../utils/types";
 
-
 const Client = ({ username, socketId }: Avatarprops) => {
   return (
     <div className="flex flex-col">

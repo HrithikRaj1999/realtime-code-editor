@@ -7,7 +7,7 @@ import useEditorManipulation from "../hooks/useEditorManipulation";
 const Editorpage = () => {
   const { socket, clients, setClients } = useSocketContext();
   const location = useLocation();
-  const { handleCopyRoomId,handleLeaveRoom } = useEditorManipulation({
+  const { handleCopyRoomId, handleLeaveRoom } = useEditorManipulation({
     socket,
     clients,
     setClients,
@@ -40,7 +40,10 @@ const Editorpage = () => {
           >
             Copy Room Id
           </button>
-          <button onClick={handleLeaveRoom} className="sm:w-[100px] md:w-[150px] text-xl bg-red-700 rounded-xl p-2">
+          <button
+            onClick={handleLeaveRoom}
+            className="sm:w-[100px] md:w-[150px] text-xl bg-red-700 rounded-xl p-2"
+          >
             Leave Room
           </button>
         </div>

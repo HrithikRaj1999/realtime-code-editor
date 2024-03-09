@@ -10,7 +10,7 @@ export const useSockets = (
   socket: Socket<DefaultEventsMap, DefaultEventsMap>,
   setSocket: React.Dispatch<
     React.SetStateAction<Socket<DefaultEventsMap, DefaultEventsMap>>
-  >
+  >,
 ) => {
   function handleErrors(error: Error) {
     console.error("socket error", error);
