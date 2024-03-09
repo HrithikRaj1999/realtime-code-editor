@@ -15,7 +15,7 @@ export type UseRoomCreateReturn = [
   (e: ChangeEvent<HTMLInputElement>) => void,
   () => void,
   NavigateFunction,
-  (e: React.KeyboardEvent<HTMLInputElement>) => void,
+  (e: React.KeyboardEvent<HTMLInputElement>) => void
 ];
 
 export interface Avatarprops {

@@ -5,6 +5,7 @@ import { Server } from "socket.io";
 import { SOCKET_ACTION_PAIR } from "./src/utils/socketFunctions";
 import ACTIONS from "./src/utils/constants";
 import codeRunnerRouter from "./src/routes/codeRunner";
+import cors from "cors";
 dotenv.config();
 
 const app: Express = express();
@@ -13,7 +14,7 @@ app.use(express.json());
 const port = process.env.PORT || 3000;
 const server = http.createServer(app);
 const io = new Server(server);
-
+app.use(cors());
 app.use("/run", codeRunnerRouter);
 
 io.on("connection", (socket) => {
@@ -24,7 +25,7 @@ io.on("connection", (socket) => {
 
   //when a user is leaving the room
   socket.on(ACTIONS.DISCONNECTING, () =>
-    SOCKET_ACTION_PAIR[ACTIONS.DISCONNECTING](socket),
+    SOCKET_ACTION_PAIR[ACTIONS.DISCONNECTING](socket)
   );
   //when a user changing code
   socket.on(ACTIONS.CODE_CHANGE, ({ roomId, code }) => {

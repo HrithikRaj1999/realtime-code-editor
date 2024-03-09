@@ -2,20 +2,26 @@ import Client from "./Client";
 import CodeEditor from "./CodeEditor";
 import { useSocketContext } from "../context/SocketContext";
 import { Navigate, useLocation, useParams } from "react-router-dom";
-import useEditorManipulation from "../hooks/useEditorManipulation";
+import OutputSection from "./OutputSection";
+import { useState } from "react";
+import useEditorSocketManipulation from "../hooks/useEditorSocketManipulation";
 
 const Editorpage = () => {
   const { socket, clients, setClients } = useSocketContext();
   const location = useLocation();
-  const { handleCopyRoomId, handleLeaveRoom } = useEditorManipulation({
+  const [code, setCode] = useState('console.log("my name is hrithik raj")');
+  const [language, setLanguage] = useState("js");
+  const [output, setOutput] = useState("Run the code to see the output");
+  const { handleCopyRoomId, handleLeaveRoom } = useEditorSocketManipulation({
     socket,
     clients,
     setClients,
   });
+
   const { roomId } = useParams();
   if (!location.state) return <Navigate to="/" />;
   return (
-    <div className="flex flex-row min-h-screen ">
+    <div className="flex flex-row min-h-screen overflow-y-hidden">
       <section className="min-w-[300px] px-3 bg-black flex flex-col items-start gap-y-3 w-1/4">
         <div className="flex flex-wrap gap-x-2 justify-center items-center m-2">
           <img
@@ -48,8 +54,16 @@ const Editorpage = () => {
           </button>
         </div>
       </section>
-      <section className="flex flex-1 justify-center items-center">
-        <CodeEditor {...{ roomId }} />
+
+      <section className="flex flex-col justify-center items-center  w-full ">
+        <div className="flex-1">
+          <CodeEditor
+            {...{ roomId, code, setCode, language, setLanguage, setOutput }}
+          />
+        </div>
+        <div className="flex-1 ">
+          <OutputSection {...{ language, output }} />
+        </div>
       </section>
     </div>
   );

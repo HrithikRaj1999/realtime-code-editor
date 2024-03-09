@@ -7,19 +7,21 @@ import {
   HandleNewJoin,
   UseEditorParamsTypes,
 } from "../utils/types";
+import axios from "axios";
 
-export default function useEditorManipulation({
+export default function useEditorSocketManipulation({
   socket,
   setClients,
+
 }: UseEditorParamsTypes) {
   const location = useLocation();
   const params = useParams();
   const navigate = useNavigate();
+
   const handleCopyRoomId = () => {
     navigator.clipboard.writeText(params.roomId!);
     toast.success("Room ID Copied to Clipboard");
   };
-
   const handleLeaveRoom = () => {
     socket.emit(ACTIONS.LEAVE);
     // Push a "fake" entry immediately after the room is loaded
@@ -59,5 +61,8 @@ export default function useEditorManipulation({
       socket.off(ACTIONS.DISCONNECTED);
     };
   }, []);
-  return { handleCopyRoomId, handleLeaveRoom };
+  return {
+    handleCopyRoomId,
+    handleLeaveRoom,
+  };
 }

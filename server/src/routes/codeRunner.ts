@@ -1,4 +1,4 @@
-import express, { Express } from "express";
+import express from "express";
 import { runCode } from "../controller/codeRunner.controller";
 
 const codeRunnerRouter = express.Router();
