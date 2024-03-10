@@ -39,7 +39,7 @@ export default function executeCode(
       }
       if (stderr) {
         reject(stderr);
-      }
+              }
       resolve(stdout);
     });
   });
