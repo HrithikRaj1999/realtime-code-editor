@@ -5,17 +5,25 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { HandleLeave, HandleNewJoin } from "../utils/types";
 import { useSocketContext } from "../context/SocketContext";
+import { useUserContext } from "../context/UserContext";
 
 export default function useEditorSocketManipulation() {
   const location = useLocation();
   const params = useParams();
   const navigate = useNavigate();
   const { socket, setClients } = useSocketContext();
+  const { setUser } = useUserContext();
   const handleCopyRoomId = () => {
     navigator.clipboard.writeText(params.roomId!);
     toast.success("Room ID Copied to Clipboard");
   };
   const handleLeaveRoom = () => {
+    setUser((prev) => {
+      const user = { ...prev };
+      const socketId = socket.id!;
+      delete user[socketId];
+      return user;
+    });
     socket.emit(ACTIONS.LEAVE);
     // Push a "fake" entry immediately after the room is loaded
     window.history.pushState(null, "", window.location.href);

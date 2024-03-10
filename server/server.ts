@@ -6,6 +6,7 @@ import { SOCKET_ACTION_PAIR } from "./src/utils/socketFunctions";
 import ACTIONS from "./src/utils/constants";
 import codeRunnerRouter from "./src/routes/codeRunner";
 import cors from "cors";
+import SocketIdManager from "./src/Services/SocketIdManager";
 dotenv.config();
 
 const app: Express = express();
@@ -16,7 +17,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 app.use(cors());
 app.use("/run", codeRunnerRouter);
-
+const socketDict = SocketIdManager.getInstance();
 io.on("connection", (socket) => {
   //a new user has joined
   socket.on(ACTIONS.JOIN, ({ roomId, username }) => {
@@ -36,7 +37,10 @@ io.on("connection", (socket) => {
   });
 
   socket.on(ACTIONS.OUTPUT_CHANGE, ({ roomId, output }) => {
-    SOCKET_ACTION_PAIR[ACTIONS.OUTPUT_CHANGE]({ io, roomId, output });
+    SOCKET_ACTION_PAIR[ACTIONS.OUTPUT_CHANGE]({ io, roomId, output, socket });
+  });
+  socket.on(ACTIONS.TYPING, (roomId) => {
+    SOCKET_ACTION_PAIR[ACTIONS.TYPING]({ io, roomId, socket });
   });
 });
 

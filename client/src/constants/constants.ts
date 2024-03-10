@@ -6,6 +6,9 @@ export const ACTIONS = {
   CODE_CHANGE: "code-change",
   SYNC_CODE: "sync-code",
   LEAVE: "leave",
-  OUTPUT_CHANGE:"output-changed"
+  OUTPUT_CHANGE: "output-changed",
+  TYPING: "typing",
+  TYPING_RECIEVED:"typing-rec"
 };
-export const RESET_TEXT = '//Write code like \n console.log("my name is hrithik raj")';
+export const RESET_TEXT =
+  '//Write code like \n console.log("my name is hrithik raj")';

@@ -15,6 +15,11 @@ export interface SocketMapType {
 export interface PairType {
   [action: string]: any;
 }
+export interface ACTION_TYPING {
+  socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
+  io: any;
+  roomId: string;
+}
 export interface ACTION_JOIN {
   socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
   roomId: string;
@@ -42,4 +47,5 @@ export type ACTION_OUT_CHANGE = {
   roomId: string;
   output: string;
   io: any;
+  socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
 };

@@ -6,10 +6,9 @@ import {
   ACTION_JOIN,
   ACTION_LEAVE,
   ACTION_OUT_CHANGE,
+  ACTION_TYPING,
   PairType,
 } from "./type";
-import { Socket } from "socket.io";
-import { DefaultEventsMap } from "socket.io/dist/typed-events";
 const socketDict = SocketIdManager.getInstance();
 
 //any needs to be corrected
@@ -78,5 +77,11 @@ export const SOCKET_ACTION_PAIR: PairType = {
   },
   [ACTIONS.OUTPUT_CHANGE]: ({ io, roomId, output }: ACTION_OUT_CHANGE) => {
     io?.to(roomId!).emit(ACTIONS.OUTPUT_CHANGE, output);
+  },
+  [ACTIONS.TYPING]: ({ io, roomId, socket }: ACTION_TYPING) => {
+    socket.to(roomId).emit(ACTIONS.TYPING_RECIEVED, {
+      socketId: socket.id,
+      username: socketDict.getUserName(socket.id),
+    });
   },
 };

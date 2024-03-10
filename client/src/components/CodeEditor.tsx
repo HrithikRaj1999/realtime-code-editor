@@ -6,7 +6,10 @@ import { useSocketContext } from "../context/SocketContext";
 import useCodeEditorPanelManipulation from "../hooks/useCodeEditorPanelManipulation";
 import { SetStateAction } from "react";
 import useEditorCode from "../hooks/useEditorCode";
-import { RESET_TEXT } from "../constants/constants";
+import { ACTIONS, RESET_TEXT } from "../constants/constants";
+import useCursor from "../hooks/useCursor";
+import { useParams } from "react-router-dom";
+import { useUserContext } from "../context/UserContext";
 
 export default function CodeEditor({
   roomId,
@@ -26,6 +29,8 @@ export default function CodeEditor({
   setOutput: React.Dispatch<SetStateAction<string>>;
 }) {
   const { socket } = useSocketContext();
+  const params = useParams();
+  // const {user}=useUserContext()
   const [width, height] = useGetWindowSize();
   const { handleSubmitCode } = useEditorCode(setOutput);
   const { handleCodeChange } = useCodeEditorPanelManipulation(
@@ -35,6 +40,7 @@ export default function CodeEditor({
     setOutput,
     output
   );
+  const { typingSockets } = useCursor(code);
 
   return (
     <div style={{ width: `${width}px` }}>
@@ -71,7 +77,10 @@ export default function CodeEditor({
       </div>
       <CodeMirror
         value={code}
-        onChange={handleCodeChange}
+        onChange={(code) => {
+          handleCodeChange(code);
+          socket.emit("typing", params.roomId);
+        }}
         height={`${height / 2}px`}
         theme={vscodeDark}
         extensions={[javascript()]}

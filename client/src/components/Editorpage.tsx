@@ -6,6 +6,10 @@ import OutputSection from "./OutputSection";
 import { useState } from "react";
 import useEditorSocketManipulation from "../hooks/useEditorSocketManipulation";
 import { RESET_TEXT } from "../constants/constants";
+import useCursor from "../hooks/useCursor";
+import { ToastBar } from "react-hot-toast";
+import { useUserContext } from "../context/UserContext";
+import TypingIndicator from "./TypingIndicator";
 const Editorpage = () => {
   const location = useLocation();
   const [code, setCode] = useState(RESET_TEXT);
@@ -14,6 +18,8 @@ const Editorpage = () => {
   const { handleCopyRoomId, handleLeaveRoom } = useEditorSocketManipulation();
   const { clients } = useSocketContext();
   const { roomId } = useParams();
+  const { typingSockets } = useCursor(code);
+  const { user } = useUserContext();
   if (!location.state) return <Navigate to="/" />;
   return (
     <div className="flex flex-row min-h-screen overflow-y-hidden">
@@ -48,16 +54,25 @@ const Editorpage = () => {
             Leave Room
           </button>
         </div>
+        <TypingIndicator {...{ typingSockets }} />
       </section>
 
       <section className="flex flex-col justify-center items-center  w-full ">
         <div className="flex-1">
           <CodeEditor
-            {...{ roomId, code, setCode, language, output,setLanguage, setOutput }}
+            {...{
+              roomId,
+              code,
+              setCode,
+              language,
+              output,
+              setLanguage,
+              setOutput,
+            }}
           />
         </div>
         <div className="flex-1 ">
-          <OutputSection {...{ language, output,setOutput }} />
+          <OutputSection {...{ language, output, setOutput }} />
         </div>
       </section>
     </div>

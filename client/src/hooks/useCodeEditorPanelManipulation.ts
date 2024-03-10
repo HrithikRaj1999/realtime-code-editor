@@ -1,9 +1,11 @@
-import React, { SetStateAction, useEffect } from "react";
+import React, { SetStateAction, useEffect, useRef, useState } from "react";
 import { Socket } from "socket.io-client";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { ACTIONS } from "../constants/constants";
 
 import { useParams } from "react-router-dom";
+
+import { useSocketContext } from "../context/SocketContext";
 
 const useCodeEditorPanelManipulation = (
   socket: Socket<DefaultEventsMap, DefaultEventsMap>,
@@ -12,11 +14,13 @@ const useCodeEditorPanelManipulation = (
   setOutput: React.Dispatch<SetStateAction<string>>,
   output: string
 ) => {
+  const { roomId } = useParams();
+
   const handleCodeChange = (code: string) => {
     if (code) setCode(code);
     else setCode("");
   };
-  const { roomId } = useParams();
+
   useEffect(() => {
     socket?.emit(ACTIONS.CODE_CHANGE, { code, roomId });
     socket?.on(ACTIONS.CODE_CHANGE, handleCodeChange);
@@ -30,6 +34,9 @@ const useCodeEditorPanelManipulation = (
     socket?.on(ACTIONS.OUTPUT_CHANGE, (output: string) => {
       setOutput(output);
     });
+    return () => {
+      socket?.off(ACTIONS.OUTPUT_CHANGE);
+    };
   }, [output, roomId, setOutput, socket]);
 
   return { handleCodeChange, code };
