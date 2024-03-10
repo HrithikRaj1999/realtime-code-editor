@@ -5,7 +5,6 @@ import toast from "react-hot-toast";
 const useEditorCode = (setOutput: React.Dispatch<SetStateAction<string>>) => {
   const handleSubmitCode = async (language: string, code: string) => {
     try {
-      console.log({ language, code });
       const response = await axios.post("http://localhost:8000/run", {
         language,
         code,

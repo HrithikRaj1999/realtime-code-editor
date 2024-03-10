@@ -5,6 +5,7 @@ import {
   ACTION_DISCONNECT,
   ACTION_JOIN,
   ACTION_LEAVE,
+  ACTION_OUT_CHANGE,
   PairType,
 } from "./type";
 import { Socket } from "socket.io";
@@ -19,7 +20,7 @@ export const getAllClients = (io: any, roomId: string) => {
         socketId: socketId,
         username: socketDict.getUserName(socketId),
       };
-    },
+    }
   );
 };
 
@@ -61,8 +62,8 @@ export const SOCKET_ACTION_PAIR: PairType = {
         // Skip the default room with the socket's own ID
         console.log(
           `${socketDict.getUserName(
-            socket.id,
-          )} is disconnected from room ${roomId}`,
+            socket.id
+          )} is disconnected from room ${roomId}`
         );
         socket.to(roomId).emit(ACTIONS.DISCONNECTED, {
           socketId: socket.id,
@@ -74,5 +75,8 @@ export const SOCKET_ACTION_PAIR: PairType = {
   },
   [ACTIONS.CODE_CHANGE]: ({ io, roomId, code }: ACTION_CODE_CHANGE) => {
     io?.to(roomId!).emit(ACTIONS.CODE_CHANGE, code);
+  },
+  [ACTIONS.OUTPUT_CHANGE]: ({ io, roomId, output }: ACTION_OUT_CHANGE) => {
+    io?.to(roomId!).emit(ACTIONS.OUTPUT_CHANGE, output);
   },
 };

@@ -5,19 +5,14 @@ import { Navigate, useLocation, useParams } from "react-router-dom";
 import OutputSection from "./OutputSection";
 import { useState } from "react";
 import useEditorSocketManipulation from "../hooks/useEditorSocketManipulation";
-
+import { RESET_TEXT } from "../constants/constants";
 const Editorpage = () => {
-  const { socket, clients, setClients } = useSocketContext();
   const location = useLocation();
-  const [code, setCode] = useState('console.log("my name is hrithik raj")');
+  const [code, setCode] = useState(RESET_TEXT);
   const [language, setLanguage] = useState("js");
   const [output, setOutput] = useState("Run the code to see the output");
-  const { handleCopyRoomId, handleLeaveRoom } = useEditorSocketManipulation({
-    socket,
-    clients,
-    setClients,
-  });
-
+  const { handleCopyRoomId, handleLeaveRoom } = useEditorSocketManipulation();
+  const { clients } = useSocketContext();
   const { roomId } = useParams();
   if (!location.state) return <Navigate to="/" />;
   return (
@@ -58,11 +53,11 @@ const Editorpage = () => {
       <section className="flex flex-col justify-center items-center  w-full ">
         <div className="flex-1">
           <CodeEditor
-            {...{ roomId, code, setCode, language, setLanguage, setOutput }}
+            {...{ roomId, code, setCode, language, output,setLanguage, setOutput }}
           />
         </div>
         <div className="flex-1 ">
-          <OutputSection {...{ language, output }} />
+          <OutputSection {...{ language, output,setOutput }} />
         </div>
       </section>
     </div>

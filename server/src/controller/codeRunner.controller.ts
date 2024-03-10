@@ -18,7 +18,6 @@ export const runCode = tryCatchError(async (req: Request, res: Response) => {
   const filePath = await generateFile(language, code);
   try {
     const result = await executeCode(filePath, language);
-    console.log("Execution Output:", result);
     return res.status(200).send({ result });
   } catch (error: any) {
     const errorMessage = error instanceof Error ? error.message : error;

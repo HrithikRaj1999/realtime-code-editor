@@ -1,4 +1,4 @@
-const ACTIONS = {
+export const ACTIONS = {
   JOIN: "join",
   JOINED: "joined",
   DISCONNECTING: "disconnecting",
@@ -6,6 +6,6 @@ const ACTIONS = {
   CODE_CHANGE: "code-change",
   SYNC_CODE: "sync-code",
   LEAVE: "leave",
+  OUTPUT_CHANGE:"output-changed"
 };
-
-export default ACTIONS;
+export const RESET_TEXT = '//Write code like \n console.log("my name is hrithik raj")';

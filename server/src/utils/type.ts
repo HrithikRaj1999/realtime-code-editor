@@ -1,7 +1,5 @@
-import { Server } from "http";
 import { Socket } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
-import ACTIONS from "./../../../client/src/constants/constants";
 
 export interface SocketMapType {
   [key: string]: string;
@@ -40,3 +38,8 @@ export type ACTION_LEAVE = Socket<
   DefaultEventsMap,
   any
 >;
+export type ACTION_OUT_CHANGE = {
+  roomId: string;
+  output: string;
+  io: any;
+};

@@ -47,7 +47,6 @@ export interface HandleLeave {
   socketId: string;
 }
 export interface UseEditorParamsTypes {
-  socket: Socket;
   clients: ClientType[] | [];
   setClients: React.Dispatch<React.SetStateAction<ClientType[] | []>>;
 }

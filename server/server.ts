@@ -34,6 +34,10 @@ io.on("connection", (socket) => {
   socket.on(ACTIONS.LEAVE, () => {
     SOCKET_ACTION_PAIR[ACTIONS.LEAVE](socket);
   });
+
+  socket.on(ACTIONS.OUTPUT_CHANGE, ({ roomId, output }) => {
+    SOCKET_ACTION_PAIR[ACTIONS.OUTPUT_CHANGE]({ io, roomId, output });
+  });
 });
 
 server.listen(port, () => console.log("Server listening on port", port));
