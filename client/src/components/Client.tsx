@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import Avatar from "react-avatar";
 import { Avatarprops } from "../utils/types";
 import { useUserContext } from "../context/UserContext";

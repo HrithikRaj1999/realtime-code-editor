@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
 import { propsType } from "../utils/types";
-import { JsxAttribute } from "typescript";
 
 interface UserInfoType {
   [key: string]: React.ReactNode;

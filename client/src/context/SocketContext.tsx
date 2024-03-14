@@ -4,7 +4,6 @@ import { io } from "socket.io-client";
 import { SocketContextType, propsType } from "../utils/types";
 import { OPTIONS } from "../constants/socket";
 import { useSockets } from "../hooks/useSockets";
-import useCursor from "../hooks/useCursor";
 
 const ClientSocket = createContext({} as SocketContextType);
 const ClientSocketProvider = (props: propsType) => {

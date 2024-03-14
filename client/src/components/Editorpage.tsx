@@ -7,8 +7,6 @@ import { useState } from "react";
 import useEditorSocketManipulation from "../hooks/useEditorSocketManipulation";
 import { RESET_TEXT } from "../constants/constants";
 import useCursor from "../hooks/useCursor";
-import { ToastBar } from "react-hot-toast";
-import { useUserContext } from "../context/UserContext";
 import TypingIndicator from "./TypingIndicator";
 const Editorpage = () => {
   const location = useLocation();
@@ -19,7 +17,6 @@ const Editorpage = () => {
   const { clients } = useSocketContext();
   const { roomId } = useParams();
   const { typingSockets } = useCursor(code);
-  const { user } = useUserContext();
   if (!location.state) return <Navigate to="/" />;
   return (
     <div className="flex flex-row min-h-screen overflow-y-hidden">

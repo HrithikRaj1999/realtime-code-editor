@@ -1,11 +1,10 @@
-import React, { SetStateAction, useEffect, useRef, useState } from "react";
+import React, { SetStateAction, useEffect } from "react";
 import { Socket } from "socket.io-client";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { ACTIONS } from "../constants/constants";
 
 import { useParams } from "react-router-dom";
 
-import { useSocketContext } from "../context/SocketContext";
 
 const useCodeEditorPanelManipulation = (
   socket: Socket<DefaultEventsMap, DefaultEventsMap>,

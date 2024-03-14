@@ -6,10 +6,9 @@ import { useSocketContext } from "../context/SocketContext";
 import useCodeEditorPanelManipulation from "../hooks/useCodeEditorPanelManipulation";
 import { SetStateAction } from "react";
 import useEditorCode from "../hooks/useEditorCode";
-import { ACTIONS, RESET_TEXT } from "../constants/constants";
+import { RESET_TEXT } from "../constants/constants";
 import useCursor from "../hooks/useCursor";
 import { useParams } from "react-router-dom";
-import { useUserContext } from "../context/UserContext";
 
 export default function CodeEditor({
   roomId,

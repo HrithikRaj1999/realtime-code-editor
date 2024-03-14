@@ -1,6 +1,5 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import toast from "react-hot-toast";
-import Avatar from "react-avatar"; // Assuming you're using react-avatar for icons
 import { TypingSockets } from "../hooks/useCursor";
 import { useUserContext } from "../context/UserContext";
 

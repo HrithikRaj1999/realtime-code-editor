@@ -1,8 +1,5 @@
 import { useSocketContext } from "../context/SocketContext";
-import { useEffect, useRef, useState } from "react";
-import toast from "react-hot-toast";
-import { useParams } from "react-router-dom";
-import { useUserContext } from "../context/UserContext";
+import { useEffect, useState } from "react";
 
 export interface TypingSockets {
   socketId: string;
