@@ -5,7 +5,8 @@ import toast from "react-hot-toast";
 const useEditorCode = (setOutput: React.Dispatch<SetStateAction<string>>) => {
   const handleSubmitCode = async (language: string, code: string) => {
     try {
-      const response = await axios.post("http://localhost:8000/run", {
+      // const response = await axios.post("http://localhost:8000/run", {
+        const response = await axios.post("https://realtime-code-editor-c7wm.onrender.com/run", {
         language,
         code,
       });
