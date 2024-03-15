@@ -83,5 +83,6 @@ export const SOCKET_ACTION_PAIR: PairType = {
       socketId: socket.id,
       username: socketDict.getUserName(socket.id),
     });
+    console.log(`${socketDict.getUserName(socket.id)} is writing`);
   },
 };

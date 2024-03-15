@@ -10,8 +10,15 @@ import useCursor from "../hooks/useCursor";
 import TypingIndicator from "./TypingIndicator";
 const Editorpage = () => {
   const location = useLocation();
-  const [code, setCode] = useState(RESET_TEXT);
-  const [language, setLanguage] = useState("js");
+  const [code, setCode] = useState(() => {
+    // Retrieve code from local storage if exists or set to default
+    const savedCode = localStorage.getItem("code");
+    return savedCode || RESET_TEXT;
+  });
+  const [language, setLanguage] = useState(() => {
+    const savedLanguage = localStorage.getItem("language");
+    return savedLanguage || "js";
+  });
   const [output, setOutput] = useState("Run the code to see the output");
   const { handleCopyRoomId, handleLeaveRoom } = useEditorSocketManipulation();
   const { clients } = useSocketContext();

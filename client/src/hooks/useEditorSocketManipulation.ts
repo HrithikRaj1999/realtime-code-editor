@@ -13,6 +13,7 @@ export default function useEditorSocketManipulation() {
   const navigate = useNavigate();
   const { socket, setClients } = useSocketContext();
   const { setUser } = useUserContext();
+  
   const handleCopyRoomId = () => {
     navigator.clipboard.writeText(params.roomId!);
     toast.success("Room ID Copied to Clipboard");
