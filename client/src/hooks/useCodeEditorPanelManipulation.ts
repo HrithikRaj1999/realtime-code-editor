@@ -32,6 +32,7 @@ const useCodeEditorPanelManipulation = (
 
   const handleCodeChange = useCallback(
     (newCode: string) => {
+      socket.emit("typing", roomId);
       setCode(newCode);
       localStorage.setItem("code", newCode);
       emitCodeChange(newCode);

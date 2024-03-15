@@ -9,7 +9,6 @@ interface TypingIndicatorpropsType {
 const TypingIndicator = ({ typingSockets }: TypingIndicatorpropsType) => {
   const { user } = useUserContext();
   useEffect(() => {
-    // console.log(typingSockets);
     // Clear existing toasts to prevent duplicates
     if (typingSockets && typingSockets?.length > 0) {
       // Show a new toast for typing indicators
@@ -17,7 +16,7 @@ const TypingIndicator = ({ typingSockets }: TypingIndicatorpropsType) => {
         return info.visible
           ? toast.custom(
               <span className="text-white" key={info.socketId}>
-                {user ? user[info.socketId] : null} {info.username} is typing...
+                <b>{user ? user[info.socketId] : null} {info.username} </b>typing.....
               </span>,
               {
                 position: "bottom-left",
