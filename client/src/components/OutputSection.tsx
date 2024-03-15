@@ -19,12 +19,19 @@ const OutputSection = ({
   const [width, height] = useGetWindowSize();
   const { socket } = useSocketContext();
   const { roomId } = useParams();
+  
   useEffect(() => {
-   
-    return () => {
-      socket?.off(ACTIONS.OUTPUT_CHANGE);
+    const handleOutputChange = (newOutput: string) => {
+      setOutput(newOutput);
     };
-  }, [socket, output]);
+
+    socket.emit(ACTIONS.OUTPUT_CHANGE, { output, roomId });
+    socket.on(ACTIONS.OUTPUT_CHANGE, handleOutputChange);
+
+    return () => {
+      socket.off(ACTIONS.OUTPUT_CHANGE, handleOutputChange);
+    };
+  }, [socket, roomId, output, setOutput]);
   return (
     <>
       <h1 className="px-4 text-2xl bg-black text-nowrap text-white">

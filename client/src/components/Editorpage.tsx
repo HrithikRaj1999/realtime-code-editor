@@ -19,7 +19,10 @@ const Editorpage = () => {
     const savedLanguage = localStorage.getItem("language");
     return savedLanguage || "js";
   });
-  const [output, setOutput] = useState("Run the code to see the output");
+  const [output, setOutput] = useState(() => {
+    const savedOut = localStorage.getItem("output");
+    return savedOut || "Run the code to see the output";
+  });
   const { handleCopyRoomId, handleLeaveRoom } = useEditorSocketManipulation();
   const { clients } = useSocketContext();
   const { roomId } = useParams();

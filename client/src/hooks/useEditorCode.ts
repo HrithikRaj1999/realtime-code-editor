@@ -12,6 +12,7 @@ const useEditorCode = (setOutput: React.Dispatch<SetStateAction<string>>) => {
       });
       const { result } = response.data;
       setOutput(result);
+      localStorage.setItem('output',result)
     } catch (error: any) {
       toast.error(error.message);
     }

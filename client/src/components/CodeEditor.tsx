@@ -28,16 +28,12 @@ export default function CodeEditor({
   setOutput: React.Dispatch<SetStateAction<string>>;
 }) {
   const { socket } = useSocketContext();
-
-  // const {user}=useUserContext()
   const [width, height] = useGetWindowSize();
   const { handleSubmitCode } = useEditorCode(setOutput);
   const { handleCodeChange, handleResetCode } = useCodeEditorPanelManipulation(
     socket,
     code,
     setCode,
-    setOutput,
-    output
   );
   useCursor(code);
 
