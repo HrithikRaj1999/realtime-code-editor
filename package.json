@@ -1,18 +1,23 @@
 {
   "scripts": {
-    "start:client": "cd ./client && npm start",
-    "start:server": "cd ./server && npm run dev",
-    "start": "concurrently \"npm run start:client\" \"npm run start:server\""
+    "dev:web": "cd apps/web && npm run dev",
+    "dev:server": "cd apps/server && npm run dev",
+    "dev:orchestrator": "cd apps/orchestrator && npm run dev",
+    "dev:runner": "cd apps/runner && npm run dev",
+    "dev": "npm run dev:all",
+    "dev:all": "concurrently \"npm run dev:web\" \"npm run dev:server\" \"npm run dev:orchestrator\" \"npm run dev:runner\"",
+    "build:web": "cd apps/web && npm run build",
+    "test:web": "cd apps/web && npm test",
+    "test:server": "cd apps/server && npm test",
+    "install:all": "cd apps/web && npm install && cd ../server && npm install && cd ../orchestrator && npm install && cd ../runner && npm install",
+    "docker:up": "docker-compose up --build",
+    "docker:down": "docker-compose down",
+    "docker:restart": "docker-compose down && docker-compose up --build"
   },
   "dependencies": {
     "concurrently": "^8.2.2"
   },
   "devDependencies": {
-    "@types/axios": "^0.14.0",
-    "@types/cors": "^2.8.17",
-    "@types/npm": "^7.19.3",
-    "axios": "^1.6.7",
-    "cors": "^2.8.5",
-    "i": "^0.3.7"
+    "prettier": "^3.2.0"
   }
 }

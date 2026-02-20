@@ -1,0 +1,45 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1B0A3E" />
+      <stop offset="0.5" stop-color="#121A46" />
+      <stop offset="1" stop-color="#062E4A" />
+    </linearGradient>
+    <linearGradient id="chipGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#A855F7" />
+      <stop offset="1" stop-color="#2563EB" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bgGradient)" />
+  <rect x="80" y="78" width="1040" height="474" rx="32" fill="rgba(0,0,0,0.28)" stroke="rgba(255,255,255,0.14)" />
+  <rect x="130" y="132" width="76" height="76" rx="16" fill="url(#chipGradient)" />
+  <path d="M157 156L173 170L157 184" stroke="white" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M187 188H203" stroke="white" stroke-width="9" stroke-linecap="round" />
+  <text x="240" y="180" fill="#FFFFFF" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="58" font-weight="700">
+    CodeStream
+  </text>
+  <text x="130" y="276" fill="#E5E7EB" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="44" font-weight="600">
+    Real-time Collaborative Code Editor
+  </text>
+  <text x="130" y="340" fill="#CBD5E1" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="30" font-weight="400">
+    Pair-programming, interview practice, and multi-language execution
+  </text>
+  <g opacity="0.9">
+    <rect x="130" y="398" width="248" height="60" rx="14" fill="rgba(168,85,247,0.18)" stroke="rgba(168,85,247,0.5)" />
+    <text x="164" y="437" fill="#F5D0FE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="27" font-weight="600">
+      Live Collaboration
+    </text>
+  </g>
+  <g opacity="0.9">
+    <rect x="396" y="398" width="230" height="60" rx="14" fill="rgba(37,99,235,0.2)" stroke="rgba(56,189,248,0.55)" />
+    <text x="434" y="437" fill="#BFDBFE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="27" font-weight="600">
+      Secure Sandbox
+    </text>
+  </g>
+  <g opacity="0.9">
+    <rect x="644" y="398" width="196" height="60" rx="14" fill="rgba(16,185,129,0.2)" stroke="rgba(16,185,129,0.55)" />
+    <text x="679" y="437" fill="#A7F3D0" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="27" font-weight="600">
+      Multi-language
+    </text>
+  </g>
+</svg>

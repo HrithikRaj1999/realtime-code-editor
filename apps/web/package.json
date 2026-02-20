@@ -1,0 +1,49 @@
+{
+  "name": "client",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.4",
+    "jsdom": "^28.1.0",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1",
+    "vitest": "^4.0.18"
+  },
+  "dependencies": {
+    "@codemirror/lang-cpp": "^6.0.3",
+    "@codemirror/lang-java": "^6.0.2",
+    "@codemirror/lang-javascript": "^6.2.4",
+    "@codemirror/lang-python": "^6.2.1",
+    "@tailwindcss/vite": "^4.2.0",
+    "@types/uuid": "^10.0.0",
+    "@uiw/codemirror-theme-vscode": "^4.25.4",
+    "@uiw/react-codemirror": "^4.25.4",
+    "autoprefixer": "^10.4.24",
+    "axios": "^1.13.5",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.575.0",
+    "postcss": "^8.5.6",
+    "prettier": "^3.8.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-hot-toast": "^2.6.0",
+    "react-resizable-panels": "^4.6.4",
+    "react-router-dom": "^7.13.0",
+    "socket.io-client": "^4.8.3",
+    "tailwind-merge": "^3.5.0",
+    "tailwindcss": "^4.2.0",
+    "uuid": "^13.0.0"
+  }
+}

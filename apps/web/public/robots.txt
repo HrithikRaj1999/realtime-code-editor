@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://www.techieraj.online/sitemap.xml
+Host: www.techieraj.online

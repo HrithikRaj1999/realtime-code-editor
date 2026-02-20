@@ -1,0 +1,17 @@
+{
+  "name": "CodeStream",
+  "short_name": "CodeStream",
+  "description": "Real-time collaborative code editor for pair-programming and interview prep.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
