@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs";
 import { spawn, spawnSync } from "child_process";
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "crypto";
 import { LANGUAGE_MAPPING } from "./languageUtils";
 
 const OUTPUT_DIR = path.join(__dirname, "..", "..", "output");
@@ -231,10 +231,10 @@ export const writeCodeToFile = async (language: string, code: string): Promise<s
     throw new Error(`Unsupported language: ${language}`);
   }
 
-  const jobDir = path.join(CODES_DIR, uuidv4());
+  const jobDir = path.join(CODES_DIR, randomUUID());
   await fs.promises.mkdir(jobDir, { recursive: true });
 
-  const fileName = language.toLowerCase() === "java" ? "Main" : uuidv4();
+  const fileName = language.toLowerCase() === "java" ? "Main" : randomUUID();
   const filePath = path.join(jobDir, `${fileName}.${config.extension}`);
   await fs.promises.writeFile(filePath, code);
 
