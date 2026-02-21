@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
+import { xcodeLight } from "@uiw/codemirror-theme-xcode";
 import { javascript } from "@codemirror/lang-javascript";
 import { python } from "@codemirror/lang-python";
 import { java } from "@codemirror/lang-java";
@@ -8,6 +9,7 @@ import { cpp } from "@codemirror/lang-cpp";
 import { EditorView } from "@codemirror/view";
 import { indentRange } from "@codemirror/language";
 import { formatCodeByLanguage } from "../lib/formatters";
+import { javascriptSyntaxLinter } from "../lib/javascriptLinter";
 
 export interface FormatResult {
   ok: boolean;
@@ -19,6 +21,8 @@ export interface CodeEditorProps {
   code: string;
   setCode: (code: string) => void;
   language: string;
+  fontSize?: number;
+  theme?: string;
   formatSignal?: number;
   onFormatComplete?: (result: FormatResult) => void;
 }
@@ -27,6 +31,8 @@ export function CodeEditor({
   code,
   setCode,
   language,
+  fontSize = 13,
+  theme = "dark",
   formatSignal = 0,
   onFormatComplete,
 }: CodeEditorProps) {
@@ -37,11 +43,11 @@ export function CodeEditor({
     latestCodeRef.current = code;
   }, [code]);
 
-  const getExtensions = () => {
+  const languageExtensions = useMemo(() => {
     switch (language) {
       case "javascript":
       case "js":
-        return [javascript()];
+        return [javascript(), javascriptSyntaxLinter];
       case "python":
       case "py":
         return [python()];
@@ -51,17 +57,32 @@ export function CodeEditor({
       case "c":
         return [cpp()];
       case "go":
-        // CodeMirror doesn't have a direct 'go' package in the main repo, using cpp/default for now or standard text
-        return [cpp()]; // Fallback or install @codemirror/lang-go if needed
+        return [cpp()]; // Fallback
       default:
         return [javascript()];
     }
-  };
+  }, [language]);
+
+  // Font size extension
+  const fontSizeExtension = useMemo(
+    () =>
+      EditorView.theme({
+        "&": { fontSize: `${fontSize}px` },
+        ".cm-content": { fontSize: `${fontSize}px` },
+        ".cm-gutters": { fontSize: `${fontSize}px` },
+      }),
+    [fontSize],
+  );
+
+  const extensions = useMemo(
+    () => [...languageExtensions, fontSizeExtension],
+    [languageExtensions, fontSizeExtension],
+  );
+
+  const cmTheme = theme === "dark" ? vscodeDark : xcodeLight;
 
   useEffect(() => {
-    if (!formatSignal) {
-      return;
-    }
+    if (!formatSignal) return;
 
     let cancelled = false;
 
@@ -84,14 +105,10 @@ export function CodeEditor({
           formatted = await formatCodeByLanguage(originalCode, language);
         }
 
-        if (cancelled) {
-          return;
-        }
+        if (cancelled) return;
 
         const changed = formatted !== originalCode;
-        if (changed) {
-          setCode(formatted);
-        }
+        if (changed) setCode(formatted);
 
         onFormatComplete?.({
           ok: true,
@@ -99,9 +116,7 @@ export function CodeEditor({
           message: changed ? "Code formatted successfully." : "Code is already formatted.",
         });
       } catch (error) {
-        if (cancelled) {
-          return;
-        }
+        if (cancelled) return;
         onFormatComplete?.({
           ok: false,
           changed: false,
@@ -111,24 +126,23 @@ export function CodeEditor({
     };
 
     void runFormat();
-
     return () => {
       cancelled = true;
     };
   }, [formatSignal, language, onFormatComplete, setCode]);
 
   return (
-    <div className="h-full w-full overflow-hidden bg-[#1e1e1e]">
+    <div className="h-full w-full overflow-hidden bg-[var(--bg-editor)] theme-transition">
       <CodeMirror
         value={code}
         height="100%"
-        theme={vscodeDark}
-        extensions={getExtensions()}
+        theme={cmTheme}
+        extensions={extensions}
         onChange={(value) => setCode(value)}
         onCreateEditor={(view) => {
           editorRef.current = view;
         }}
-        className="h-full text-base"
+        className="h-full"
       />
     </div>
   );

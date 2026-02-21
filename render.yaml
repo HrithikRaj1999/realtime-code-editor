@@ -1,0 +1,92 @@
+services:
+  # Managed Redis-compatible datastore (Render Key Value / Valkey)
+  - type: keyvalue
+    name: codestream-redis
+    plan: starter
+    # Required for Key Value. Empty list = block public internet access (private network still works).
+    ipAllowList: []
+    maxmemoryPolicy: allkeys-lru
+
+  # Queue API (Private Service)
+  - type: pserv
+    name: codestream-orchestrator
+    runtime: docker
+    dockerfilePath: ./apps/orchestrator/Dockerfile
+    dockerContext: ./apps/orchestrator
+    plan: starter
+    autoDeploy: true
+    envVars:
+      - key: DEPLOY_ENV
+        value: cloud
+      - key: RUN_ON_CLOUD
+        value: "true"
+      - key: PORT
+        value: "4000"
+      # Use the private-network connection string for Key Value
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: codestream-redis
+          property: connectionString
+
+  # Worker (Runner)
+  - type: worker
+    name: codestream-runner
+    runtime: docker
+    dockerfilePath: ./apps/runner/Dockerfile
+    dockerContext: ./apps/runner
+    plan: starter
+    autoDeploy: true
+    envVars:
+      - key: DEPLOY_ENV
+        value: cloud
+      - key: RUN_ON_CLOUD
+        value: "true"
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: codestream-redis
+          property: connectionString
+
+  # API Gateway + Socket Server (Web Service)
+  - type: web
+    name: codestream-server
+    runtime: docker
+    dockerfilePath: ./apps/server/Dockerfile
+    dockerContext: ./apps/server
+    plan: starter
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: DEPLOY_ENV
+        value: cloud
+      - key: RUN_ON_CLOUD
+        value: "true"
+      # Render defaults PORT=10000 for web services; overriding is fine if your server binds to this.
+      - key: PORT
+        value: "5000"
+
+      # Update this after Cloudflare Pages deploy (or set to your custom domain)
+      - key: CLIENT_URL
+        value: https://your-cloudflare-pages-domain.pages.dev
+
+      # Internal private-network host:port for orchestrator
+      - key: ORCHESTRATOR_HOSTPORT
+        fromService:
+          type: pserv
+          name: codestream-orchestrator
+          property: hostport
+
+      # If your server code requires a FULL URL with scheme, set this after first deploy:
+      # ORCHESTRATOR_URL = "http://<ORCHESTRATOR_HOSTPORT>"
+      - key: ORCHESTRATOR_URL
+        value: http://replace-with-orchestrator-internal-hostport
+
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: codestream-redis
+          property: connectionString
+
+      - key: JWT_SECRET
+        generateValue: true

@@ -18,10 +18,11 @@ WORKDIR /app
 
 # Copy package files and install dependencies
 COPY package*.json ./
-RUN npm install --production
+RUN npm ci
 
 # Copy source code
 COPY . .
+RUN npm run build && npm prune --omit=dev
 
 # Create temp directories for code execution
 RUN mkdir -p /tmp/code-exec /app/codes /app/output && \
@@ -30,4 +31,4 @@ RUN mkdir -p /tmp/code-exec /app/codes /app/output && \
 # Switch to non-root user
 USER runner
 
-CMD ["npx", "ts-node", "src/index.ts"]
+CMD ["npm", "run", "start"]

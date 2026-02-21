@@ -9,6 +9,106 @@
   --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
 }
 
+/* ── Dark Theme ─────────────────────────────────────────── */
+[data-theme="dark"] {
+  /* Backgrounds */
+  --bg-primary: #0f1117;
+  --bg-secondary: #131620;
+  --bg-editor: #1a1d2e;
+  --bg-input: rgba(255, 255, 255, 0.05);
+  --bg-hover: rgba(255, 255, 255, 0.07);
+  --bg-card: rgba(255, 255, 255, 0.04);
+  --bg-badge: rgba(99, 102, 241, 0.12);
+
+  /* Borders */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  --border-accent: rgba(99, 102, 241, 0.35);
+
+  /* Text — much more readable */
+  --text-primary: #eef0f6;
+  --text-secondary: #b0b8cc;
+  --text-muted: #8892a8;
+  --text-faint: #5e6882;
+
+  /* Accent — warmer indigo-blue */
+  --accent: #818cf8;
+  --accent-hover: #6366f1;
+
+  /* Separators & Misc */
+  --separator: #1d2235;
+  --separator-hover: rgba(129, 140, 248, 0.5);
+  --selection-bg: rgba(99, 102, 241, 0.25);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
+
+  /* Output & Chat */
+  --output-text: #86efac;
+  --output-chevron: rgba(34, 197, 94, 0.35);
+  --chat-own: rgba(99, 102, 241, 0.18);
+  --chat-own-text: #c7d2fe;
+  --chat-other: rgba(255, 255, 255, 0.06);
+  --chat-other-text: #d1d5db;
+
+  /* CodeMirror */
+  --cm-gutter-bg: rgba(0, 0, 0, 0.2);
+  --cm-gutter-border: rgba(255, 255, 255, 0.05);
+  --cm-gutter-text: rgba(255, 255, 255, 0.22);
+  --cm-active-line: rgba(99, 102, 241, 0.06);
+  --cm-active-gutter: rgba(99, 102, 241, 0.1);
+  --cm-active-gutter-text: rgba(129, 140, 248, 0.7);
+}
+
+/* ── Light (Warm Cream) Theme ──────────────────────────── */
+[data-theme="light"] {
+  /* Backgrounds */
+  --bg-primary: #faf8f4;
+  --bg-secondary: #f0ece5;
+  --bg-editor: #fffdf8;
+  --bg-input: rgba(0, 0, 0, 0.035);
+  --bg-hover: rgba(0, 0, 0, 0.05);
+  --bg-card: rgba(0, 0, 0, 0.025);
+  --bg-badge: rgba(79, 70, 229, 0.08);
+
+  /* Borders */
+  --border: rgba(0, 0, 0, 0.1);
+  --border-hover: rgba(0, 0, 0, 0.18);
+  --border-accent: rgba(79, 70, 229, 0.28);
+
+  /* Text — warm tones */
+  --text-primary: #1a1813;
+  --text-secondary: #4a463e;
+  --text-muted: #706b62;
+  --text-faint: #9c9689;
+
+  /* Accent */
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+
+  /* Separators & Misc */
+  --separator: #e4dfd6;
+  --separator-hover: rgba(79, 70, 229, 0.45);
+  --selection-bg: rgba(79, 70, 229, 0.18);
+  --scrollbar-thumb: rgba(0, 0, 0, 0.12);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.22);
+
+  /* Output & Chat */
+  --output-text: #166534;
+  --output-chevron: rgba(22, 163, 74, 0.3);
+  --chat-own: rgba(79, 70, 229, 0.1);
+  --chat-own-text: #4338ca;
+  --chat-other: rgba(0, 0, 0, 0.04);
+  --chat-other-text: #3a3630;
+
+  /* CodeMirror */
+  --cm-gutter-bg: rgba(0, 0, 0, 0.035);
+  --cm-gutter-border: rgba(0, 0, 0, 0.07);
+  --cm-gutter-text: rgba(0, 0, 0, 0.32);
+  --cm-active-line: rgba(79, 70, 229, 0.05);
+  --cm-active-gutter: rgba(79, 70, 229, 0.1);
+  --cm-active-gutter-text: rgba(79, 70, 229, 0.75);
+}
+
 /* ── Base Styles ─────────────────────────────────────────── */
 @layer base {
   *,
@@ -34,18 +134,18 @@
 
   body {
     font-family: var(--font-sans);
-    background-color: #0a0a0a;
-    color: #e5e7eb;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     overflow-x: hidden;
+    transition:
+      background-color 0.25s ease,
+      color 0.25s ease;
   }
 
-  /* Selection highlight */
   ::selection {
-    background-color: rgba(168, 85, 247, 0.3);
-    color: #fff;
+    background-color: var(--selection-bg);
   }
 
-  /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -54,11 +154,11 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--scrollbar-thumb);
     border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.16);
+    background: var(--scrollbar-thumb-hover);
   }
 }
 
@@ -123,7 +223,6 @@
 .cm-editor {
   height: 100% !important;
   font-family: var(--font-mono) !important;
-  font-size: 13px !important;
   line-height: 1.6 !important;
   background: transparent !important;
 }
@@ -134,9 +233,9 @@
 }
 
 .cm-editor .cm-gutters {
-  background: rgba(0, 0, 0, 0.15) !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.04) !important;
-  color: rgba(255, 255, 255, 0.18) !important;
+  background: var(--cm-gutter-bg) !important;
+  border-right: 1px solid var(--cm-gutter-border) !important;
+  color: var(--cm-gutter-text) !important;
 }
 
 .cm-editor .cm-gutterElement {
@@ -144,25 +243,44 @@
 }
 
 .cm-editor .cm-activeLine {
-  background: rgba(168, 85, 247, 0.04) !important;
+  background: var(--cm-active-line) !important;
 }
 
 .cm-editor .cm-activeLineGutter {
-  background: rgba(168, 85, 247, 0.08) !important;
-  color: rgba(168, 85, 247, 0.6) !important;
+  background: var(--cm-active-gutter) !important;
+  color: var(--cm-active-gutter-text) !important;
 }
 
 .cm-editor .cm-cursor {
-  border-color: #a855f7 !important;
+  border-color: var(--accent) !important;
 }
 
 .cm-editor .cm-matchingBracket {
-  background: rgba(168, 85, 247, 0.2) !important;
+  background: rgba(99, 102, 241, 0.22) !important;
   color: inherit !important;
 }
 
 .cm-editor .cm-selectionMatch {
-  background: rgba(168, 85, 247, 0.15) !important;
+  background: rgba(99, 102, 241, 0.15) !important;
+}
+
+.cm-editor .cm-lintRange-error {
+  background-color: rgba(239, 68, 68, 0.12) !important;
+  border-bottom: 2px solid rgba(239, 68, 68, 0.95) !important;
+}
+
+.cm-editor .cm-lint-marker-error {
+  color: rgba(239, 68, 68, 0.95) !important;
+}
+
+.cm-editor .cm-diagnostic {
+  background: var(--bg-secondary) !important;
+  border: 1px solid rgba(239, 68, 68, 0.35) !important;
+  color: #fca5a5 !important;
+}
+
+.cm-editor .cm-diagnostic-error {
+  border-left: 3px solid rgba(239, 68, 68, 0.95) !important;
 }
 
 /* ── Toast Overrides ─────────────────────────────────────── */
@@ -173,6 +291,15 @@
 
 /* ── Focus ring ──────────────────────────────────────────── */
 @utility focus-ring {
-  outline: 2px solid rgba(168, 85, 247, 0.5);
+  outline: 2px solid rgba(99, 102, 241, 0.5);
   outline-offset: 2px;
+}
+
+/* ── Theme transition helper ─────────────────────────────── */
+@utility theme-transition {
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
 }

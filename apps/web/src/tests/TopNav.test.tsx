@@ -16,6 +16,8 @@ vi.mock("lucide-react", () => ({
   WifiOff: () => <span data-testid="wifi-off-icon" />,
   WandSparkles: () => <span data-testid="format-icon" />,
   Loader2: () => <span data-testid="loader-icon" />,
+  ChevronDown: () => <span data-testid="chevron-down-icon" />,
+  User: () => <span data-testid="user-icon" />,
 }));
 
 // Mock ParticipantsList
@@ -31,7 +33,7 @@ describe("TopNav Component", () => {
       isRunning: false,
       onRun: vi.fn(),
       theme: "dark",
-      setTheme: vi.fn(),
+      toggleTheme: vi.fn(),
     };
 
     render(<TopNav {...props} />);
@@ -48,7 +50,7 @@ describe("TopNav Component", () => {
       isRunning: false,
       onRun,
       theme: "dark",
-      setTheme: vi.fn(),
+      toggleTheme: vi.fn(),
     };
 
     render(<TopNav {...props} />);
@@ -64,7 +66,7 @@ describe("TopNav Component", () => {
       isRunning: true,
       onRun: vi.fn(),
       theme: "dark",
-      setTheme: vi.fn(),
+      toggleTheme: vi.fn(),
     };
 
     render(<TopNav {...props} />);

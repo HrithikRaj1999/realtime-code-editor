@@ -1,9 +1,9 @@
 import { Worker } from "bullmq";
-import dotenv from "dotenv";
 import Redis from "ioredis";
 import executeCode, { writeCodeToFile } from "./utils/executeCode";
+import { loadRuntimeEnv } from "./config/loadRuntimeEnv";
 
-dotenv.config();
+loadRuntimeEnv();
 
 const redisOptions = {
   host: process.env.REDIS_HOST || "localhost",

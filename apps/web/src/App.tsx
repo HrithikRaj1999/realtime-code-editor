@@ -1,13 +1,14 @@
 import { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import { ThemeProvider } from "./context/ThemeContext";
 
 const LandingPage = lazy(() => import("./components/LandingPage"));
 const WorkspaceLayout = lazy(() => import("./components/WorkspaceLayout"));
 
 function RouteFallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#050505] text-gray-200 text-sm">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)] text-[var(--text-primary)] text-sm">
       Loading...
     </div>
   );
@@ -15,7 +16,7 @@ function RouteFallback() {
 
 function App() {
   return (
-    <>
+    <ThemeProvider>
       <div>
         <Toaster position="top-right" />
       </div>
@@ -28,7 +29,7 @@ function App() {
           </Routes>
         </Suspense>
       </Router>
-    </>
+    </ThemeProvider>
   );
 }
 

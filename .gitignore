@@ -19,6 +19,10 @@ out/
 .env.production.local
 *.env
 *.env.*
+!**/.env.example
+!**/.env.common.example
+!**/.env.local.example
+!**/.env.cloud.example
 
 # Logs
 npm-debug.log*

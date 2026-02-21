@@ -1,5 +1,4 @@
 import express, { Express } from "express";
-import dotenv from "dotenv";
 import http from "http";
 import { Server } from "socket.io";
 import ACTIONS from "./src/utils/constants";
@@ -8,8 +7,9 @@ import Redis from "ioredis";
 import cors from "cors";
 import SocketIdManager from "./src/Services/SocketIdManager";
 import authRoutes from "./src/routes/auth";
+import { loadRuntimeEnv } from "./src/config/loadRuntimeEnv";
 
-dotenv.config();
+loadRuntimeEnv();
 
 const app: Express = express();
 app.use(express.urlencoded({ extended: true }));

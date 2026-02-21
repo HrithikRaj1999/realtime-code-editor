@@ -1,10 +1,10 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import { Queue } from "bullmq";
 import { v4 as uuidv4 } from "uuid";
+import { loadRuntimeEnv } from "./config/loadRuntimeEnv";
 
-dotenv.config();
+loadRuntimeEnv();
 
 const app = express();
 app.use(express.json({ limit: "1mb" }));

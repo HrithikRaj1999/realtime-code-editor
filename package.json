@@ -4,9 +4,17 @@
     "dev:server": "cd apps/server && npm run dev",
     "dev:orchestrator": "cd apps/orchestrator && npm run dev",
     "dev:runner": "cd apps/runner && npm run dev",
-    "dev": "npm run dev:all",
+    "dev:local": "cross-env DEPLOY_ENV=local RUN_ON_CLOUD=false VITE_RUN_ON_CLOUD=false npm run dev:all",
+    "dev:cloud": "cross-env DEPLOY_ENV=cloud RUN_ON_CLOUD=true VITE_RUN_ON_CLOUD=true npm run dev:all",
+    "dev": "npm run dev:local",
     "dev:all": "concurrently \"npm run dev:web\" \"npm run dev:server\" \"npm run dev:orchestrator\" \"npm run dev:runner\"",
     "build:web": "cd apps/web && npm run build",
+    "build:web:local": "cross-env VITE_RUN_ON_CLOUD=false cd apps/web && npm run build:local",
+    "build:web:cloud": "cross-env VITE_RUN_ON_CLOUD=true cd apps/web && npm run build:cloud",
+    "setup:env": "node scripts/setup-env.mjs local",
+    "setup:env:local": "node scripts/setup-env.mjs local",
+    "setup:env:cloud": "node scripts/setup-env.mjs cloud",
+    "warmup": "node scripts/warmup.mjs",
     "test:web": "cd apps/web && npm test",
     "test:server": "cd apps/server && npm test",
     "install:all": "cd apps/web && npm install && cd ../server && npm install && cd ../orchestrator && npm install && cd ../runner && npm install",
@@ -18,6 +26,7 @@
     "concurrently": "^8.2.2"
   },
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "prettier": "^3.2.0"
   }
 }

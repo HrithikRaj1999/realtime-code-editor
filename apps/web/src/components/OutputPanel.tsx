@@ -1,68 +1,65 @@
-import { Loader2, XCircle, Terminal, ChevronRight } from "lucide-react";
+import { Loader2, SquareTerminal, ChevronRight, Trash2 } from "lucide-react";
 
 interface OutputPanelProps {
   output: string;
   loading?: boolean;
   onClear?: () => void;
+  fontSize?: number;
 }
 
-export function OutputPanel({ output, loading = false, onClear }: OutputPanelProps) {
+export function OutputPanel({ output, loading = false, onClear, fontSize = 13 }: OutputPanelProps) {
   return (
-    <div className="h-full flex flex-col bg-[#0d0d0d]">
-      {/* Mobile-only header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.06] md:hidden">
-        <span className="text-xs font-medium uppercase tracking-wider text-gray-500 flex items-center gap-2">
-          <Terminal className="w-3.5 h-3.5 text-green-500/70" />
-          Output
-        </span>
-        {onClear && output && (
-          <button
-            onClick={onClear}
-            className="text-gray-600 hover:text-gray-400 transition-colors p-1 rounded hover:bg-white/5"
-            title="Clear output"
-          >
-            <XCircle className="w-3.5 h-3.5" />
-          </button>
-        )}
-      </div>
-
+    <div className="h-full flex flex-col bg-[var(--bg-secondary)] theme-transition">
       {/* Output body */}
-      <div className="flex-1 p-4 overflow-y-auto font-mono text-sm scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+      <div className="flex-1 p-4 overflow-y-auto font-mono" style={{ fontSize: `${fontSize}px` }}>
         {loading ? (
-          <div className="flex items-center gap-3 text-purple-400">
+          <div className="flex items-center gap-3 text-[var(--accent)]">
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span className="text-xs font-medium animate-pulse">Executing code...</span>
+            <span className="text-[13px] font-medium animate-pulse">Executing code…</span>
           </div>
         ) : output ? (
-          <div className="space-y-0">
+          <div className="space-y-0.5">
             {output.split("\n").map((line, i) => (
-              <div key={i} className="flex gap-2 group">
-                <ChevronRight className="w-3 h-3 text-green-600/40 mt-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <pre className="text-green-300/90 whitespace-pre-wrap text-xs leading-relaxed flex-1">
+              <div
+                key={i}
+                className="flex gap-2 group hover:bg-[var(--bg-hover)] rounded px-1 -mx-1 transition-colors"
+              >
+                <ChevronRight
+                  className="w-3 h-3 mt-1.5 shrink-0 opacity-0 group-hover:opacity-60 transition-opacity"
+                  style={{ color: "var(--output-chevron)" }}
+                />
+                <pre
+                  className="whitespace-pre-wrap leading-relaxed flex-1"
+                  style={{ color: "var(--output-text)", fontSize: `${fontSize}px` }}
+                >
                   {line}
                 </pre>
               </div>
             ))}
           </div>
         ) : (
-          <div className="h-full flex flex-col items-center justify-center text-gray-700">
-            <Terminal className="w-8 h-8 mb-3 opacity-30" />
-            <p className="text-xs font-medium">No output yet</p>
-            <p className="text-[10px] mt-1 text-gray-800">
-              Click <span className="text-green-600 font-semibold">Run Code</span> to execute
-            </p>
+          <div className="h-full flex flex-col items-center justify-center gap-3 text-[var(--text-faint)]">
+            <div className="w-12 h-12 rounded-xl bg-[var(--bg-hover)] flex items-center justify-center">
+              <SquareTerminal className="w-6 h-6 opacity-40" />
+            </div>
+            <div className="text-center">
+              <p className="text-[13px] font-medium text-[var(--text-muted)]">No output yet</p>
+              <p className="text-[11px] mt-1 text-[var(--text-faint)]">
+                Hit <span className="text-emerald-500 font-semibold">▶ Run Code</span> to execute
+              </p>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Clear button bar */}
+      {/* Clear bar */}
       {output && onClear && (
-        <div className="hidden md:flex items-center justify-end px-3 py-1.5 border-t border-white/[0.04]">
+        <div className="flex items-center justify-end px-3 py-1.5 border-t border-[var(--border)]">
           <button
             onClick={onClear}
-            className="text-[10px] text-gray-600 hover:text-gray-400 px-2 py-1 rounded hover:bg-white/5 transition-colors flex items-center gap-1"
+            className="text-[11px] text-[var(--text-faint)] hover:text-red-400 px-2 py-1 rounded-md hover:bg-red-500/8 transition-colors flex items-center gap-1.5"
           >
-            <XCircle className="w-3 h-3" />
+            <Trash2 className="w-3 h-3" />
             Clear
           </button>
         </div>
