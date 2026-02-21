@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef } from "react";
-import CodeMirror from "@uiw/react-codemirror";
+import { useEffect, useMemo, useRef, useCallback, memo } from "react";
+import CodeMirror, { type ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
 import { xcodeLight } from "@uiw/codemirror-theme-xcode";
 import { javascript } from "@codemirror/lang-javascript";
@@ -27,7 +27,7 @@ export interface CodeEditorProps {
   onFormatComplete?: (result: FormatResult) => void;
 }
 
-export function CodeEditor({
+export const CodeEditor = memo(function CodeEditor({
   code,
   setCode,
   language,
@@ -37,10 +37,37 @@ export function CodeEditor({
   onFormatComplete,
 }: CodeEditorProps) {
   const editorRef = useRef<EditorView | null>(null);
+  const cmRef = useRef<ReactCodeMirrorRef>(null);
   const latestCodeRef = useRef(code);
+
+  // Track whether the latest change was initiated locally (user typing).
+  // When the user types, onChange fires BEFORE React re-renders with the
+  // new value prop.  We set this flag in onChange so the value-sync
+  // effect below can skip the redundant programmatic update.
+  const localChangeRef = useRef(false);
 
   useEffect(() => {
     latestCodeRef.current = code;
+
+    // If the change originated from local typing we already have the
+    // correct editor state — skip pushing `code` back into CodeMirror.
+    if (localChangeRef.current) {
+      localChangeRef.current = false;
+      return;
+    }
+
+    // Remote change: push the new value into the editor without a full
+    // React-driven re-render cycle.
+    const view = editorRef.current;
+    if (view && code !== view.state.doc.toString()) {
+      view.dispatch({
+        changes: {
+          from: 0,
+          to: view.state.doc.length,
+          insert: code,
+        },
+      });
+    }
   }, [code]);
 
   const languageExtensions = useMemo(() => {
@@ -80,6 +107,15 @@ export function CodeEditor({
   );
 
   const cmTheme = theme === "dark" ? vscodeDark : xcodeLight;
+
+  // Stable onChange handler — marks the change as local and forwards to parent
+  const handleChange = useCallback(
+    (value: string) => {
+      localChangeRef.current = true;
+      setCode(value);
+    },
+    [setCode],
+  );
 
   useEffect(() => {
     if (!formatSignal) return;
@@ -134,11 +170,12 @@ export function CodeEditor({
   return (
     <div className="h-full w-full overflow-hidden bg-[var(--bg-editor)] theme-transition">
       <CodeMirror
+        ref={cmRef}
         value={code}
         height="100%"
         theme={cmTheme}
         extensions={extensions}
-        onChange={(value) => setCode(value)}
+        onChange={handleChange}
         onCreateEditor={(view) => {
           editorRef.current = view;
         }}
@@ -146,4 +183,4 @@ export function CodeEditor({
       />
     </div>
   );
-}
+});

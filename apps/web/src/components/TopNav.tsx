@@ -14,7 +14,7 @@ import {
   ChevronDown,
   User,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, memo } from "react";
 import { toast } from "react-hot-toast";
 import { ParticipantsList } from "./ParticipantsList";
 import type { LanguageOption } from "../features/workspace/constants";
@@ -41,7 +41,7 @@ export interface TopNavProps {
   isFormatting?: boolean;
 }
 
-export function TopNav({
+export const TopNav = memo(function TopNav({
   language,
   setLanguage,
   languageOptions,
@@ -221,4 +221,4 @@ export function TopNav({
       </div>
     </nav>
   );
-}
+});

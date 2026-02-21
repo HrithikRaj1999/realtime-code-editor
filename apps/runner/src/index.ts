@@ -11,9 +11,21 @@ const submissionQueueName = process.env.SUBMISSION_QUEUE_NAME || "submission";
 const jobUpdatesChannel = process.env.JOB_UPDATES_CHANNEL || "job-updates";
 const allowedLanguages = new Set(["javascript", "python", "java", "cpp", "go", "c"]);
 const MIN_TIMEOUT_MS = 250;
-const MAX_TIMEOUT_MS = 10000;
+const MAX_TIMEOUT_MS = 20000;
 const MIN_MEMORY_MB = 32;
 const MAX_MEMORY_MB = 256;
+
+function getDefaultTimeoutMs(language: string): number {
+  switch (language.toLowerCase()) {
+    case "go":
+    case "java":
+    case "cpp":
+    case "c":
+      return 12000;
+    default:
+      return 5000;
+  }
+}
 
 // Redis client for publishing results
 const redisPublisher = new Redis(redisOptions);
@@ -33,7 +45,9 @@ const worker = new Worker(
     console.log(`Processing job ${job.id}`);
     const { code, language, roomId, jobId, stdin, timeoutMs, memoryMb } = job.data;
     const normalizedLanguage = String(language || "").toLowerCase();
-    const requestedTimeout = Number.isFinite(timeoutMs) ? Number(timeoutMs) : 5000;
+    const requestedTimeout = Number.isFinite(timeoutMs)
+      ? Number(timeoutMs)
+      : getDefaultTimeoutMs(normalizedLanguage);
     const requestedMemory = Number.isFinite(memoryMb) ? Number(memoryMb) : 128;
     const effectiveTimeout = Math.min(
       Math.max(Math.floor(requestedTimeout), MIN_TIMEOUT_MS),

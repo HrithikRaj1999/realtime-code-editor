@@ -43,7 +43,7 @@ export function loadRuntimeEnv() {
   for (const envFile of envFiles) {
     const fullPath = path.join(cwd, envFile);
     if (fs.existsSync(fullPath)) {
-      dotenv.config({ path: fullPath, override: true });
+      dotenv.config({ path: fullPath });
     }
   }
 

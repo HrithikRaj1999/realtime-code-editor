@@ -80,7 +80,7 @@ Each app supports layered env files:
 - `.env.common` (shared)
 - `.env.local` (local mode)
 - `.env.cloud` (cloud mode)
-- `.env` (manual override, highest priority)
+- `.env` (manual local overrides)
 
 Switching flags:
 - Backend: `DEPLOY_ENV=local|cloud` and `RUN_ON_CLOUD=true|false`
@@ -91,6 +91,8 @@ Load order at runtime:
 1. `.env.common`
 2. `.env.<local|cloud>`
 3. `.env`
+
+Process environment variables (for example Docker `-e`) take precedence over values from env files.
 
 ## First-Time Setup
 
@@ -173,6 +175,19 @@ npm run dev:cloud
 - `npm run setup:env:local` - create/switch env files for local
 - `npm run setup:env:cloud` - create/switch env files for cloud
 - `npm run warmup` - hit health endpoints from `WARMUP_URLS`
+- `npm run test:load:help` - show load/chaos test commands
+- `npm run test:load:cpu-mem` - bounded CPU+RAM container stress
+- `npm run test:load:io` - bounded disk I/O container stress
+- `npm run test:load:app:start` - start constrained app container
+- `npm run test:load:app:stats` - show app container resource usage
+- `npm run test:load:app:logs` - tail app container logs
+- `npm run test:load:app:inspect` - check OOM/exit status
+- `npm run test:load:http` - HTTP load test via isolated `wrk` container
+- `npm run test:load:chaos:restart` - stop/start app container
+- `npm run test:load:full-retest` - one-command Redis+load+chaos+security retest with pass/fail summary
+
+Load-test env injection:
+- Use `LOADTEST_APP_ENV_<KEY>=<VALUE>` with `test:load:app:start` or `test:load:full-retest` to pass `-e KEY=VALUE` into the app container.
 
 ## Deploy to Render + Cloudflare Pages
 

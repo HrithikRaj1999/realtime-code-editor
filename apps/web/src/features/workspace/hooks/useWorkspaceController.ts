@@ -18,7 +18,8 @@ interface UseWorkspaceControllerOptions {
   username: string;
 }
 
-const CODE_EMIT_DEBOUNCE_MS = 75;
+const CODE_EMIT_DEBOUNCE_MS = 300;
+const TYPING_THROTTLE_MS = 2000;
 
 function getCodeTemplate(language: string): string {
   return CODE_TEMPLATES[language] || CODE_TEMPLATES.javascript;
@@ -47,6 +48,7 @@ export function useWorkspaceController({ roomId, username }: UseWorkspaceControl
   const codeRevisionRef = useRef(0);
   const pendingCodeEmitRef = useRef<{ code: string; revision: number } | null>(null);
   const codeEmitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingEmitRef = useRef(0);
 
   useEffect(() => {
     codeRef.current = code;
@@ -211,7 +213,13 @@ export function useWorkspaceController({ roomId, username }: UseWorkspaceControl
       const nextRevision = codeRevisionRef.current + 1;
       codeRevisionRef.current = nextRevision;
       scheduleCodeEmit(nextCode, nextRevision);
-      sendTyping();
+
+      // Throttle typing indicator to avoid flooding the socket
+      const now = Date.now();
+      if (now - lastTypingEmitRef.current >= TYPING_THROTTLE_MS) {
+        lastTypingEmitRef.current = now;
+        sendTyping();
+      }
     },
     [scheduleCodeEmit, sendTyping],
   );

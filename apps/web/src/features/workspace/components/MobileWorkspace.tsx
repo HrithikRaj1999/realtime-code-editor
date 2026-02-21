@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Code2, Loader2, MessageSquare, SquareTerminal } from "lucide-react";
 import { ChatPanel } from "../../../components/ChatPanel";
 import { CodeEditor, type FormatResult } from "../../../components/CodeEditorV2";
@@ -35,7 +36,7 @@ interface MobileWorkspaceProps {
   onSendChatMessage: (message: string) => void;
 }
 
-export function MobileWorkspace({
+export const MobileWorkspace = memo(function MobileWorkspace({
   activeTab,
   language,
   code,
@@ -88,7 +89,9 @@ export function MobileWorkspace({
             label="Console"
             right={
               <>
-                {isRunning ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--accent)]" /> : null}
+                {isRunning ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--accent)]" />
+                ) : null}
                 <ZoomControls
                   size={consoleFontSize}
                   onIn={onZoomConsoleIn}
@@ -121,4 +124,4 @@ export function MobileWorkspace({
       ) : null}
     </div>
   );
-}
+});

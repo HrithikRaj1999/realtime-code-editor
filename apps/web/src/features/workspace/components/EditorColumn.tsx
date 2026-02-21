@@ -1,4 +1,5 @@
 import { Code2, GripHorizontal, StickyNote } from "lucide-react";
+import { memo } from "react";
 import type { MouseEvent } from "react";
 import { CodeEditor, type FormatResult } from "../../../components/CodeEditorV2";
 import { NotesPanel } from "../../../components/NotesPanel";
@@ -22,7 +23,7 @@ interface EditorColumnProps {
   onZoomOut: () => void;
 }
 
-export function EditorColumn({
+export const EditorColumn = memo(function EditorColumn({
   roomId,
   language,
   code,
@@ -93,4 +94,4 @@ export function EditorColumn({
       </div>
     </div>
   );
-}
+});

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Loader2, SquareTerminal, ChevronRight, Trash2 } from "lucide-react";
 
 interface OutputPanelProps {
@@ -7,7 +8,12 @@ interface OutputPanelProps {
   fontSize?: number;
 }
 
-export function OutputPanel({ output, loading = false, onClear, fontSize = 13 }: OutputPanelProps) {
+export const OutputPanel = memo(function OutputPanel({
+  output,
+  loading = false,
+  onClear,
+  fontSize = 13,
+}: OutputPanelProps) {
   return (
     <div className="h-full flex flex-col bg-[var(--bg-secondary)] theme-transition">
       {/* Output body */}
@@ -66,4 +72,4 @@ export function OutputPanel({ output, loading = false, onClear, fontSize = 13 }:
       )}
     </div>
   );
-}
+});

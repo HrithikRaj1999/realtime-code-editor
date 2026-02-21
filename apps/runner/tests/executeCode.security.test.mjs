@@ -123,7 +123,7 @@ func main() {
 }
 `,
     expected: "10",
-    timeoutMs: 10000,
+    timeoutMs: 15000,
   },
 };
 

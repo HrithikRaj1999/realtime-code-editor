@@ -12,12 +12,24 @@ app.use(express.json({ limit: "1mb" }));
 app.use(cors());
 
 const SUPPORTED_LANGUAGES = ["javascript", "python", "java", "cpp", "go", "c"];
-const MAX_TIMEOUT_MS = 10000;
+const MAX_TIMEOUT_MS = 20000;
 const MAX_MEMORY_MB = 256;
 const MIN_TIMEOUT_MS = 250;
 const MIN_MEMORY_MB = 32;
 const MAX_STDIN_BYTES = 10 * 1024;
 const submissionQueueName = process.env.SUBMISSION_QUEUE_NAME || "submission";
+
+function getDefaultTimeoutMs(language: string): number {
+  switch (language.toLowerCase()) {
+    case "go":
+    case "java":
+    case "cpp":
+    case "c":
+      return 12000;
+    default:
+      return 5000;
+  }
+}
 
 const redisOptions = buildRedisOptions();
 
@@ -81,7 +93,9 @@ app.post("/run", async (req: Request, res: Response) => {
   }
 
   const jobId = uuidv4();
-  const requestedTimeout = Number.isFinite(timeoutMs) ? Number(timeoutMs) : 5000;
+  const requestedTimeout = Number.isFinite(timeoutMs)
+    ? Number(timeoutMs)
+    : getDefaultTimeoutMs(normalizedLanguage);
   const requestedMemory = Number.isFinite(memoryMb) ? Number(memoryMb) : 128;
   const effectiveTimeout = Math.min(Math.max(Math.floor(requestedTimeout), MIN_TIMEOUT_MS), MAX_TIMEOUT_MS);
   const effectiveMemory = Math.min(Math.max(Math.floor(requestedMemory), MIN_MEMORY_MB), MAX_MEMORY_MB);

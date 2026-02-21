@@ -11,9 +11,23 @@ const SAFE_PATH_DEFAULT = process.platform === "win32" ? "C:\\Windows\\System32"
 const JS_WORKER_FILE_JS = path.join(__dirname, "javascriptSandboxWorker.js");
 const JS_WORKER_FILE_TS = path.join(__dirname, "javascriptSandboxWorker.ts");
 const MIN_TIMEOUT_MS = 250;
-const MAX_TIMEOUT_MS = 10000;
+const MAX_TIMEOUT_MS = 20000;
 const MIN_MEMORY_MB = 32;
 const MAX_MEMORY_MB = 256;
+const COMPILED_LANGUAGE_DEFAULT_TIMEOUT_MS = 12000;
+
+function getDefaultTimeoutMs(language: string): number {
+  const normalized = language.toLowerCase();
+  switch (normalized) {
+    case "go":
+    case "java":
+    case "cpp":
+    case "c":
+      return COMPILED_LANGUAGE_DEFAULT_TIMEOUT_MS;
+    default:
+      return 5000;
+  }
+}
 
 if (!fs.existsSync(CODES_DIR)) {
   fs.mkdirSync(CODES_DIR, { recursive: true });
@@ -73,6 +87,8 @@ function buildSandboxEnv(overrides: Record<string, string> = {}): NodeJS.Process
     TEMP: tempRoot,
     TMP: tempRoot,
     GOCACHE: goCacheDir,
+    GOMODCACHE: path.join(goCacheDir, "mod"),
+    XDG_CACHE_HOME: tempRoot,
   };
 
   if (isWindows) {
@@ -207,6 +223,7 @@ function runProcess({
 }
 
 async function runCompiledLanguage(
+  runtimeLabel: string,
   compilerCandidates: string[],
   compileArgs: string[],
   executablePath: string,
@@ -214,7 +231,7 @@ async function runCompiledLanguage(
   stdin: string,
   sourceDir: string,
 ) {
-  const compiler = resolveCommand(compilerCandidates, "Compiler");
+  const compiler = resolveCommand(compilerCandidates, runtimeLabel);
   await runProcess({
     command: compiler,
     args: compileArgs,
@@ -360,9 +377,14 @@ export default function executeCode(
   language: string,
   options: ExecutionOptions = {},
 ): Promise<string> {
-  const { stdin = "", timeoutMs = 5000, memoryMb = 128 } = options;
+  const { stdin = "", timeoutMs, memoryMb = 128 } = options;
+  const fallbackTimeoutMs = getDefaultTimeoutMs(language);
+  const requestedTimeout =
+    typeof timeoutMs === "number" && Number.isFinite(timeoutMs)
+      ? timeoutMs
+      : fallbackTimeoutMs;
   const safeTimeoutMs = Math.min(
-    Math.max(Math.floor(Number.isFinite(timeoutMs) ? timeoutMs : 5000), MIN_TIMEOUT_MS),
+    Math.max(Math.floor(requestedTimeout), MIN_TIMEOUT_MS),
     MAX_TIMEOUT_MS,
   );
   const safeMemoryMb = Math.min(
@@ -415,6 +437,7 @@ export default function executeCode(
         `${fileName}${process.platform === "win32" ? ".exe" : ".out"}`,
       );
       return runCompiledLanguage(
+        "C++ compiler",
         ["g++", "clang++"],
         [filePath, "-o", executablePath],
         executablePath,
@@ -429,6 +452,7 @@ export default function executeCode(
         `${fileName}${process.platform === "win32" ? ".exe" : ".out"}`,
       );
       return runCompiledLanguage(
+        "C compiler",
         ["gcc", "clang"],
         [filePath, "-o", executablePath],
         executablePath,
@@ -439,14 +463,26 @@ export default function executeCode(
     }
     case "go": {
       const goCommand = resolveCommand(["go"], "Go");
+      const executablePath = path.join(
+        sourceDir,
+        `${fileName}${process.platform === "win32" ? ".exe" : ".out"}`,
+      );
       return runProcess({
         command: goCommand,
-        args: ["run", filePath],
+        args: ["build", "-o", executablePath, filePath],
         timeoutMs: safeTimeoutMs,
-        stdin,
         cwd: sourceDir,
         env: buildSandboxEnv(),
-      });
+      }).then(() =>
+        runProcess({
+          command: executablePath,
+          args: [],
+          timeoutMs: safeTimeoutMs,
+          stdin,
+          cwd: sourceDir,
+          env: buildSandboxEnv(),
+        }),
+      );
     }
     default: {
       throw new Error(`Unsupported language: ${language}`);

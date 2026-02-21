@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Loader2, MessageSquare, SquareTerminal } from "lucide-react";
 import type { MouseEvent } from "react";
 import { Group, Panel, Separator } from "react-resizable-panels";
@@ -43,7 +44,7 @@ interface DesktopWorkspaceProps {
   onSendChatMessage: (message: string) => void;
 }
 
-export function DesktopWorkspace({
+export const DesktopWorkspace = memo(function DesktopWorkspace({
   roomId,
   language,
   code,
@@ -160,4 +161,4 @@ export function DesktopWorkspace({
       </Panel>
     </Group>
   );
-}
+});

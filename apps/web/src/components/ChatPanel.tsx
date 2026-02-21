@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import { Send, MessageCircle } from "lucide-react";
 
 interface ChatMessage {
@@ -14,7 +14,7 @@ interface ChatPanelProps {
   username: string;
 }
 
-export function ChatPanel({ messages, onSend, username }: ChatPanelProps) {
+export const ChatPanel = memo(function ChatPanel({ messages, onSend, username }: ChatPanelProps) {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -101,4 +101,4 @@ export function ChatPanel({ messages, onSend, username }: ChatPanelProps) {
       </form>
     </div>
   );
-}
+});

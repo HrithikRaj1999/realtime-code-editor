@@ -48,7 +48,10 @@ function normalizeCodePayload(payload: unknown): CodeUpdate | null {
     const revisionValue = (payload as CodeUpdate).revision;
     return {
       code: (payload as CodeUpdate).code,
-      revision: typeof revisionValue === "number" && Number.isFinite(revisionValue) ? revisionValue : undefined,
+      revision:
+        typeof revisionValue === "number" && Number.isFinite(revisionValue)
+          ? revisionValue
+          : undefined,
     };
   }
 
@@ -61,6 +64,21 @@ export function useSocket({ roomId, username, onCodeChange, onOutputChange }: Us
   const [connected, setConnected] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [typingUser, setTypingUser] = useState<string | null>(null);
+
+  // ── Stable refs for callbacks ──────────────────────────────────────
+  // Store the latest callbacks in refs so that socket event handlers
+  // always invoke the current version WITHOUT needing to tear down and
+  // recreate the socket connection when the callbacks change identity.
+  const onCodeChangeRef = useRef(onCodeChange);
+  const onOutputChangeRef = useRef(onOutputChange);
+
+  useEffect(() => {
+    onCodeChangeRef.current = onCodeChange;
+  }, [onCodeChange]);
+
+  useEffect(() => {
+    onOutputChangeRef.current = onOutputChange;
+  }, [onOutputChange]);
 
   useEffect(() => {
     const serverUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -79,33 +97,33 @@ export function useSocket({ roomId, username, onCodeChange, onOutputChange }: Us
     });
 
     // When someone joins, update participants
-    socket.on(ACTIONS.JOINED, ({ clients, username: joinedUser, socketId }) => {
+    socket.on(ACTIONS.JOINED, ({ clients }) => {
       setParticipants(clients);
     });
 
     // When someone disconnects
-    socket.on(ACTIONS.DISCONNECTED, ({ socketId, username: leftUser }) => {
+    socket.on(ACTIONS.DISCONNECTED, ({ socketId }) => {
       setParticipants((prev) => prev.filter((p) => p.socketId !== socketId));
     });
 
-    // Code changes from other users
+    // Code changes from other users — read callback from ref
     socket.on(ACTIONS.CODE_CHANGE, (payload: unknown) => {
       const update = normalizeCodePayload(payload);
       if (update) {
-        onCodeChange?.(update);
+        onCodeChangeRef.current?.(update);
       }
     });
 
     socket.on(ACTIONS.SYNC_CODE, (payload: unknown) => {
       const update = normalizeCodePayload(payload);
       if (update) {
-        onCodeChange?.(update);
+        onCodeChangeRef.current?.(update);
       }
     });
 
-    // Server-originated output (from runner via Redis)
+    // Server-originated output (from Redis job-updates) — read callback from ref
     socket.on(ACTIONS.OUTPUT_CHANGE, (data: { output: string; status: string }) => {
-      onOutputChange?.(data);
+      onOutputChangeRef.current?.(data);
     });
 
     // Typing indicator
@@ -124,6 +142,8 @@ export function useSocket({ roomId, username, onCodeChange, onOutputChange }: Us
       socket.disconnect();
       socketRef.current = null;
     };
+    // Only reconnect when roomId or username actually changes.
+    // Callback identity changes are handled via refs above.
   }, [roomId, username]);
 
   const sendCodeChange = useCallback(
