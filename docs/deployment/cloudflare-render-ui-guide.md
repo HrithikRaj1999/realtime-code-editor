@@ -55,6 +55,7 @@ Create services in this order:
    - Render -> `New` -> `Redis`
    - Name: `codestream-redis`
    - Plan: `Starter` (recommended for reduced cold starts)
+   - Set eviction policy to `noeviction` (required by BullMQ to avoid dropped jobs)
 
 2. Orchestrator (Private Service):
    - Render -> `New` -> `Private Service`

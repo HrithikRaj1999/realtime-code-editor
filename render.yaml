@@ -5,7 +5,7 @@ services:
     plan: starter
     # Required for Key Value. Empty list = block public internet access (private network still works).
     ipAllowList: []
-    maxmemoryPolicy: allkeys-lru
+    maxmemoryPolicy: noeviction
 
   # Queue API (Private Service)
   - type: pserv
