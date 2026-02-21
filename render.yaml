@@ -77,11 +77,6 @@ services:
           name: codestream-orchestrator
           property: hostport
 
-      # If your server code requires a FULL URL with scheme, set this after first deploy:
-      # ORCHESTRATOR_URL = "http://<ORCHESTRATOR_HOSTPORT>"
-      - key: ORCHESTRATOR_URL
-        value: http://replace-with-orchestrator-internal-hostport
-
       - key: REDIS_URL
         fromService:
           type: keyvalue

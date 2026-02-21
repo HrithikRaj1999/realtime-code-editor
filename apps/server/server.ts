@@ -8,6 +8,7 @@ import cors from "cors";
 import SocketIdManager from "./src/Services/SocketIdManager";
 import authRoutes from "./src/routes/auth";
 import { loadRuntimeEnv } from "./src/config/loadRuntimeEnv";
+import { buildRedisOptions } from "./src/config/redis";
 
 loadRuntimeEnv();
 
@@ -25,9 +26,19 @@ const io = new Server(server, {
   },
 });
 
+function resolveOrchestratorUrl() {
+  const rawValue =
+    process.env.ORCHESTRATOR_URL || process.env.ORCHESTRATOR_HOSTPORT || "localhost:4000";
+  const trimmed = rawValue.trim();
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+  return `http://${trimmed}`;
+}
+
 // Proxy /run requests to orchestrator
 app.use("/run", async (req, res) => {
-  const orchestratorUrl = process.env.ORCHESTRATOR_URL || "http://localhost:4000";
+  const orchestratorUrl = resolveOrchestratorUrl();
   try {
     const response = await fetch(`${orchestratorUrl}/run`, {
       method: "POST",
@@ -97,10 +108,12 @@ io.on("connection", (socket) => {
 });
 
 // Redis subscriber for run job updates
-const redisSubscriber = new Redis({
-  host: process.env.REDIS_HOST || "localhost",
-  port: parseInt(process.env.REDIS_PORT || "6379"),
+const redisOptions = buildRedisOptions();
+const redisSubscriber = new Redis(redisOptions);
+redisSubscriber.on("error", (err) => {
+  console.error("Redis subscriber error:", err);
 });
+console.log(`Redis target: ${redisOptions.host}:${redisOptions.port}`);
 
 redisSubscriber
   .subscribe("job-updates")

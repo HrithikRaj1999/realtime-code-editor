@@ -3,6 +3,7 @@ import cors from "cors";
 import { Queue } from "bullmq";
 import { v4 as uuidv4 } from "uuid";
 import { loadRuntimeEnv } from "./config/loadRuntimeEnv";
+import { buildRedisOptions } from "./config/redis";
 
 loadRuntimeEnv();
 
@@ -14,12 +15,13 @@ const SUPPORTED_LANGUAGES = ["javascript", "python", "java", "cpp", "go", "c"];
 const MAX_TIMEOUT_MS = 10000;
 const MAX_MEMORY_MB = 256;
 
-const redisOptions = {
-  host: process.env.REDIS_HOST || "localhost",
-  port: parseInt(process.env.REDIS_PORT || "6379"),
-};
+const redisOptions = buildRedisOptions();
 
 const submissionQueue = new Queue("submission", { connection: redisOptions });
+submissionQueue.on("error", (err) => {
+  console.error("Submission queue error:", err);
+});
+console.log(`Redis target: ${redisOptions.host}:${redisOptions.port}`);
 
 // Rate limiting: simple in-memory counter (replace with Redis in production)
 const rateLimits = new Map<string, { count: number; resetAt: number }>();

@@ -2,19 +2,20 @@ import { Worker } from "bullmq";
 import Redis from "ioredis";
 import executeCode, { writeCodeToFile } from "./utils/executeCode";
 import { loadRuntimeEnv } from "./config/loadRuntimeEnv";
+import { buildRedisOptions } from "./config/redis";
 
 loadRuntimeEnv();
 
-const redisOptions = {
-  host: process.env.REDIS_HOST || "localhost",
-  port: parseInt(process.env.REDIS_PORT || "6379"),
-  maxRetriesPerRequest: null,
-};
+const redisOptions = buildRedisOptions({ maxRetriesPerRequest: null });
 
 // Redis client for publishing results
 const redisPublisher = new Redis(redisOptions);
+redisPublisher.on("error", (err) => {
+  console.error("Redis publisher error:", err);
+});
 
 console.log("Starting runner worker...");
+console.log(`Redis target: ${redisOptions.host}:${redisOptions.port}`);
 
 const worker = new Worker(
   "submission",
