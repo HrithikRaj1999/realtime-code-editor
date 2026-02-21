@@ -174,6 +174,8 @@ npm run dev:cloud
 - `npm run build:web:cloud` - cloud web build
 - `npm run setup:env:local` - create/switch env files for local
 - `npm run setup:env:cloud` - create/switch env files for cloud
+- `npm run stop:cloud` - suspend Render services (and optionally delete Cloudflare Pages projects)
+- `npm run start:cloud` - resume Render services and trigger deploys
 - `npm run warmup` - hit health endpoints from `WARMUP_URLS`
 - `npm run test:load:help` - show load/chaos test commands
 - `npm run test:load:cpu-mem` - bounded CPU+RAM container stress
@@ -188,6 +190,16 @@ npm run dev:cloud
 
 Load-test env injection:
 - Use `LOADTEST_APP_ENV_<KEY>=<VALUE>` with `test:load:app:start` or `test:load:full-retest` to pass `-e KEY=VALUE` into the app container.
+
+Cloud control env notes (`.env.stop-cloud`):
+- Cloudflare delete requires either:
+- `CLOUDFLARE_API_TOKEN`, or
+- `CLOUDFLARE_GLOBAL_KEY` (or `CLOUDFARE_GLOBAL_KEYS`) plus `CLOUDFLARE_EMAIL`.
+- Provide `CLOUDFLARE_ACCOUNT_ID`, or let script auto-resolve it from Cloudflare API.
+- For Render lifecycle actions, set `RENDER_API_KEY` and either:
+- `RENDER_BLUEPRINT_ID` (preferred), or
+- `RENDER_SERVICE_IDS` as comma-separated service ids (or `name:id` pairs).
+- To suspend/resume Redis/Valkey too, set `RENDER_KEY_VALUE_IDS` (comma-separated `red-...` ids), or provide `REDIS_URL` so id can be auto-detected.
 
 ## Deploy to Render + Cloudflare Pages
 

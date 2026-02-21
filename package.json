@@ -17,6 +17,7 @@
     "setup:env:local": "node scripts/setup-env.mjs local",
     "setup:env:cloud": "node scripts/setup-env.mjs cloud",
     "stop:cloud": "node scripts/stop-cloud.mjs",
+    "start:cloud": "node scripts/start-cloud.mjs",
     "test:load:help": "node scripts/load-test.mjs help",
     "test:load:cpu-mem": "node scripts/load-test.mjs stress:cpu-mem",
     "test:load:io": "node scripts/load-test.mjs stress:io",
