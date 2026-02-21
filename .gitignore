@@ -23,6 +23,7 @@ out/
 !**/.env.common.example
 !**/.env.local.example
 !**/.env.cloud.example
+!.env.stop-cloud.example
 
 # Logs
 npm-debug.log*
@@ -48,3 +49,4 @@ apps/runner/codes
 # Temporary
 tmp/
 temp/
+.tmp/

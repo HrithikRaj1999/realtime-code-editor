@@ -1,5 +1,13 @@
 {
   "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "setup:local": "npm run setup",
+    "setup:cloud": "npm run start:cloud",
+    "setup:bitwarden": "node scripts/setup.mjs --bitwarden",
+    "env:sync:bitwarden": "node scripts/bitwarden-sync-env.mjs",
+    "start:local": "node scripts/start-local.mjs",
+    "stop:local": "node scripts/stop-local.mjs",
+    "all:local": "npm run dev:local",
     "dev:web": "npm --prefix apps/web run dev",
     "dev:server": "npm --prefix apps/server run dev",
     "dev:orchestrator": "npm --prefix apps/orchestrator run dev",
@@ -16,6 +24,7 @@
     "setup:env": "node scripts/setup-env.mjs local",
     "setup:env:local": "node scripts/setup-env.mjs local",
     "setup:env:cloud": "node scripts/setup-env.mjs cloud",
+    "env:generate:ci": "node scripts/generate-ci-env.mjs",
     "stop:cloud": "node scripts/stop-cloud.mjs",
     "start:cloud": "node scripts/start-cloud.mjs",
     "test:load:help": "node scripts/load-test.mjs help",
