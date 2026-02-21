@@ -5,12 +5,12 @@ import ACTIONS from "./src/utils/constants";
 import { SOCKET_ACTION_PAIR } from "./src/utils/socketFunctions";
 import Redis from "ioredis";
 import cors from "cors";
-import SocketIdManager from "./src/Services/SocketIdManager";
 import authRoutes from "./src/routes/auth";
 import { loadRuntimeEnv } from "./src/config/loadRuntimeEnv";
 import { buildRedisOptions } from "./src/config/redis";
 
 loadRuntimeEnv();
+const jobUpdatesChannel = process.env.JOB_UPDATES_CHANNEL || "job-updates";
 
 const app: Express = express();
 app.use(express.urlencoded({ extended: true }));
@@ -64,8 +64,6 @@ app.get("/health", (_req, res) => {
 // Auth routes
 app.use("/auth", authRoutes);
 
-const socketDict = SocketIdManager.getInstance();
-
 io.on("connection", (socket) => {
   // A new user has joined
   socket.on(ACTIONS.JOIN, ({ roomId, username }: { roomId: string; username: string }) => {
@@ -114,9 +112,10 @@ redisSubscriber.on("error", (err) => {
   console.error("Redis subscriber error:", err);
 });
 console.log(`Redis target: ${redisOptions.host}:${redisOptions.port}`);
+console.log(`Subscribe channel: ${jobUpdatesChannel}`);
 
 redisSubscriber
-  .subscribe("job-updates")
+  .subscribe(jobUpdatesChannel)
   .then((count) => {
     console.log(`Subscribed to ${count} channels.`);
   })
@@ -125,7 +124,7 @@ redisSubscriber
   });
 
 redisSubscriber.on("message", (channel: string, message: string) => {
-  if (channel === "job-updates") {
+  if (channel === jobUpdatesChannel) {
     try {
       const update = JSON.parse(message);
       const { roomId, output, status, error } = update;

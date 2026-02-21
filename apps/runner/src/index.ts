@@ -7,6 +7,8 @@ import { buildRedisOptions } from "./config/redis";
 loadRuntimeEnv();
 
 const redisOptions = buildRedisOptions({ maxRetriesPerRequest: null });
+const submissionQueueName = process.env.SUBMISSION_QUEUE_NAME || "submission";
+const jobUpdatesChannel = process.env.JOB_UPDATES_CHANNEL || "job-updates";
 
 // Redis client for publishing results
 const redisPublisher = new Redis(redisOptions);
@@ -16,9 +18,11 @@ redisPublisher.on("error", (err) => {
 
 console.log("Starting runner worker...");
 console.log(`Redis target: ${redisOptions.host}:${redisOptions.port}`);
+console.log(`Queue target: ${submissionQueueName}`);
+console.log(`Publish channel: ${jobUpdatesChannel}`);
 
 const worker = new Worker(
-  "submission",
+  submissionQueueName,
   async (job) => {
     console.log(`Processing job ${job.id}`);
     const { code, language, roomId, jobId, stdin, timeoutMs, memoryMb } = job.data;
@@ -26,7 +30,7 @@ const worker = new Worker(
     try {
       // Notify: running
       await redisPublisher.publish(
-        "job-updates",
+        jobUpdatesChannel,
         JSON.stringify({
           status: "running",
           jobId,
@@ -49,7 +53,7 @@ const worker = new Worker(
 
       // Notify: completed
       await redisPublisher.publish(
-        "job-updates",
+        jobUpdatesChannel,
         JSON.stringify({
           status: "completed",
           jobId,
@@ -63,7 +67,7 @@ const worker = new Worker(
     } catch (error: any) {
       console.error(`Job ${job.id} failed:`, error);
       await redisPublisher.publish(
-        "job-updates",
+        jobUpdatesChannel,
         JSON.stringify({
           status: "failed",
           jobId,

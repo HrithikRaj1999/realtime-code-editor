@@ -16,6 +16,34 @@ A realtime collaborative code editor with:
 - `render.yaml` - Render blueprint (cloud services)
 - `docs/deployment/cloudflare-render-ui-guide.md` - detailed cloud UI deployment guide
 
+Directory layout:
+
+```text
+apps/
+  web/
+    src/components
+    src/hooks
+    src/lib
+  server/
+    src/config
+    src/middleware
+    src/routes
+    src/services
+    src/utils
+  orchestrator/
+    src/config
+    src/index.ts
+  runner/
+    src/config
+    src/utils
+    src/index.ts
+```
+
+Naming conventions:
+- folders: lowercase (`services`, `routes`, `utils`, `config`)
+- files: kebab-case for multi-word backend files (example: `socket-id-manager.ts`)
+- one entrypoint per service (`apps/*/src/index.ts` or `apps/server/server.ts`)
+
 ## Architecture
 
 1. Frontend sends run request to `server` (`/run`).
@@ -162,8 +190,7 @@ Server (`apps/server`):
 - `DEPLOY_ENV=cloud`
 - `RUN_ON_CLOUD=true`
 - `PORT=5000`
-- `REDIS_HOST=<render redis host>`
-- `REDIS_PORT=<render redis port>`
+- `REDIS_URL=<render keyvalue connection string>`
 - `ORCHESTRATOR_URL=http://<orchestrator-private-host>:4000`
 - `CLIENT_URL=https://www.techieraj.online` (or your Pages domain)
 - `JWT_SECRET=<strong-random-secret>`
@@ -172,14 +199,12 @@ Orchestrator (`apps/orchestrator`):
 - `DEPLOY_ENV=cloud`
 - `RUN_ON_CLOUD=true`
 - `PORT=4000`
-- `REDIS_HOST=<render redis host>`
-- `REDIS_PORT=<render redis port>`
+- `REDIS_URL=<render keyvalue connection string>`
 
 Runner (`apps/runner`):
 - `DEPLOY_ENV=cloud`
 - `RUN_ON_CLOUD=true`
-- `REDIS_HOST=<render redis host>`
-- `REDIS_PORT=<render redis port>`
+- `REDIS_URL=<render keyvalue connection string>`
 
 Web (`apps/web` / Cloudflare Pages):
 - `VITE_RUN_ON_CLOUD=true`

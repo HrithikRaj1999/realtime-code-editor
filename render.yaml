@@ -28,6 +28,14 @@ services:
           type: keyvalue
           name: codestream-redis
           property: connectionString
+      - key: REDIS_FAMILY
+        value: "4"
+      - key: REDIS_CONNECT_TIMEOUT_MS
+        value: "20000"
+      - key: SUBMISSION_QUEUE_NAME
+        value: submission
+      - key: JOB_UPDATES_CHANNEL
+        value: job-updates
 
   # Worker (Runner)
   - type: worker
@@ -47,6 +55,14 @@ services:
           type: keyvalue
           name: codestream-redis
           property: connectionString
+      - key: REDIS_FAMILY
+        value: "4"
+      - key: REDIS_CONNECT_TIMEOUT_MS
+        value: "20000"
+      - key: SUBMISSION_QUEUE_NAME
+        value: submission
+      - key: JOB_UPDATES_CHANNEL
+        value: job-updates
 
   # API Gateway + Socket Server (Web Service)
   - type: web
@@ -82,6 +98,12 @@ services:
           type: keyvalue
           name: codestream-redis
           property: connectionString
+      - key: REDIS_FAMILY
+        value: "4"
+      - key: REDIS_CONNECT_TIMEOUT_MS
+        value: "20000"
+      - key: JOB_UPDATES_CHANNEL
+        value: job-updates
 
       - key: JWT_SECRET
         generateValue: true

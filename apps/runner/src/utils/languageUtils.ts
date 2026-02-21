@@ -1,4 +1,4 @@
-// Language mapping for the runner — mirrors packages/contracts/languages.ts
+// Language mapping for the runner.
 export const LANGUAGE_MAPPING: Record<string, { extension: string; name: string }> = {
   javascript: { extension: "js", name: "JavaScript" },
   python: { extension: "py", name: "Python" },

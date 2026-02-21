@@ -66,8 +66,9 @@ Create services in this order:
      - `DEPLOY_ENV=cloud`
      - `RUN_ON_CLOUD=true`
      - `PORT=4000`
-     - `REDIS_HOST=<redis internal host>`
-     - `REDIS_PORT=<redis internal port>`
+     - `SUBMISSION_QUEUE_NAME=submission`
+     - `JOB_UPDATES_CHANNEL=job-updates`
+     - `REDIS_URL=<redis internal connection string>`
 
 3. Runner (Worker):
    - Render -> `New` -> `Worker`
@@ -77,8 +78,9 @@ Create services in this order:
    - Env vars:
      - `DEPLOY_ENV=cloud`
      - `RUN_ON_CLOUD=true`
-     - `REDIS_HOST=<redis internal host>`
-     - `REDIS_PORT=<redis internal port>`
+     - `SUBMISSION_QUEUE_NAME=submission`
+     - `JOB_UPDATES_CHANNEL=job-updates`
+     - `REDIS_URL=<redis internal connection string>`
 
 4. Server (Web Service):
    - Render -> `New` -> `Web Service`
@@ -90,8 +92,8 @@ Create services in this order:
      - `DEPLOY_ENV=cloud`
      - `RUN_ON_CLOUD=true`
      - `PORT=5000`
-     - `REDIS_HOST=<redis internal host>`
-     - `REDIS_PORT=<redis internal port>`
+     - `JOB_UPDATES_CHANNEL=job-updates`
+     - `REDIS_URL=<redis internal connection string>`
      - `ORCHESTRATOR_URL=http://codestream-orchestrator:4000`
      - `CLIENT_URL=https://<your-cloudflare-pages-domain>`
      - `JWT_SECRET=<strong-random-secret>`

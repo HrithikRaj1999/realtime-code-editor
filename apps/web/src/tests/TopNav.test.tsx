@@ -71,7 +71,7 @@ describe("TopNav Component", () => {
 
     render(<TopNav {...props} />);
 
-    const button = screen.getByText("Running...");
+    const button = screen.getByText(/Running/);
     expect(button.closest("button")).toBeDisabled();
   });
 });

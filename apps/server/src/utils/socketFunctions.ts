@@ -1,5 +1,5 @@
 import ACTIONS from "./constants";
-import SocketIdManager from "../Services/SocketIdManager";
+import SocketIdManager from "../services/socket-id-manager";
 import {
   CodeChangeArgs,
   JoinArgs,

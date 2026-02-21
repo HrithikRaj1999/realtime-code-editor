@@ -14,14 +14,16 @@ app.use(cors());
 const SUPPORTED_LANGUAGES = ["javascript", "python", "java", "cpp", "go", "c"];
 const MAX_TIMEOUT_MS = 10000;
 const MAX_MEMORY_MB = 256;
+const submissionQueueName = process.env.SUBMISSION_QUEUE_NAME || "submission";
 
 const redisOptions = buildRedisOptions();
 
-const submissionQueue = new Queue("submission", { connection: redisOptions });
+const submissionQueue = new Queue(submissionQueueName, { connection: redisOptions });
 submissionQueue.on("error", (err) => {
   console.error("Submission queue error:", err);
 });
 console.log(`Redis target: ${redisOptions.host}:${redisOptions.port}`);
+console.log(`Queue target: ${submissionQueueName}`);
 
 // Rate limiting: simple in-memory counter (replace with Redis in production)
 const rateLimits = new Map<string, { count: number; resetAt: number }>();
