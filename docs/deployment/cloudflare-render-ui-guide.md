@@ -100,11 +100,17 @@ Create services in this order:
 
 1. Cloudflare dashboard -> `Workers & Pages` -> `Create` -> `Pages`.
 2. Connect your Git repo.
-3. Configure build:
+3. Configure build (pick one setup):
+   - Preferred setup:
    - Framework preset: `Vite`
    - Root directory: `apps/web`
    - Build command: `npm run build:cloud`
    - Build output directory: `dist`
+   - Repo-root setup (if Root directory is `/`):
+   - Framework preset: `None`
+   - Root directory: `/`
+   - Build command: `npm run build:cloud`
+   - Build output directory: `apps/web/dist`
 4. Add Environment Variables in Pages project settings:
    - `VITE_RUN_ON_CLOUD=true`
    - `VITE_API_URL=https://<render-server-domain>`
