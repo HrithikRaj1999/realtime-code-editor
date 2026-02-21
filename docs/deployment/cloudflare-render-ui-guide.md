@@ -81,6 +81,8 @@ Create services in this order:
      - `SUBMISSION_QUEUE_NAME=submission`
      - `JOB_UPDATES_CHANNEL=job-updates`
      - `REDIS_URL=<redis internal connection string>`
+   - Security note:
+     - Runner enforces hardened execution with per-job timeout and memory caps for all supported languages.
 
 4. Server (Web Service):
    - Render -> `New` -> `Web Service`
@@ -142,6 +144,12 @@ After deployment:
 4. Confirm chat messages sync between two browser tabs.
 5. Verify server health endpoint:
    - `https://<render-server-domain>/health`
+
+Optional pre-deploy security regression (local):
+
+```bash
+npm --prefix apps/runner run test:security
+```
 
 ## 6. Common Mistakes
 

@@ -16,6 +16,7 @@
     "setup:env": "node scripts/setup-env.mjs local",
     "setup:env:local": "node scripts/setup-env.mjs local",
     "setup:env:cloud": "node scripts/setup-env.mjs cloud",
+    "stop:cloud": "node scripts/stop-cloud.mjs",
     "warmup": "node scripts/warmup.mjs",
     "test:web": "npm --prefix apps/web test",
     "test:server": "npm --prefix apps/server test",

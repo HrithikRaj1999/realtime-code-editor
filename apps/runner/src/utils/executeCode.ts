@@ -1,16 +1,20 @@
 import path from "path";
 import fs from "fs";
-import { spawn, spawnSync } from "child_process";
+import { spawn, spawnSync, ChildProcessWithoutNullStreams } from "child_process";
 import { randomUUID } from "crypto";
+import { Worker } from "worker_threads";
 import { LANGUAGE_MAPPING } from "./languageUtils";
 
-const OUTPUT_DIR = path.join(__dirname, "..", "..", "output");
 const CODES_DIR = path.join(__dirname, "..", "..", "codes");
 const MAX_OUTPUT_BYTES = 10 * 1024;
+const SAFE_PATH_DEFAULT = process.platform === "win32" ? "C:\\Windows\\System32" : "/usr/bin:/bin";
+const JS_WORKER_FILE_JS = path.join(__dirname, "javascriptSandboxWorker.js");
+const JS_WORKER_FILE_TS = path.join(__dirname, "javascriptSandboxWorker.ts");
+const MIN_TIMEOUT_MS = 250;
+const MAX_TIMEOUT_MS = 10000;
+const MIN_MEMORY_MB = 32;
+const MAX_MEMORY_MB = 256;
 
-if (!fs.existsSync(OUTPUT_DIR)) {
-  fs.mkdirSync(OUTPUT_DIR, { recursive: true });
-}
 if (!fs.existsSync(CODES_DIR)) {
   fs.mkdirSync(CODES_DIR, { recursive: true });
 }
@@ -43,6 +47,71 @@ interface ProcessOptions {
   env?: NodeJS.ProcessEnv;
 }
 
+function buildSandboxEnv(overrides: Record<string, string> = {}): NodeJS.ProcessEnv {
+  const isWindows = process.platform === "win32";
+  const tempRoot =
+    process.env.TEMP || process.env.TMP || (isWindows ? "C:\\Windows\\Temp" : "/tmp");
+  const homeDir = isWindows
+    ? process.env.USERPROFILE || tempRoot
+    : process.env.HOME || "/tmp";
+  const goCacheDir = path.join(tempRoot, "codestream-go-cache");
+
+  try {
+    if (!fs.existsSync(goCacheDir)) {
+      fs.mkdirSync(goCacheDir, { recursive: true });
+    }
+  } catch {
+    // Best effort cache setup; execution will fail with a clear runtime error if required.
+  }
+
+  const env: NodeJS.ProcessEnv = {
+    PATH: process.env.PATH || SAFE_PATH_DEFAULT,
+    LANG: "C.UTF-8",
+    LC_ALL: "C.UTF-8",
+    HOME: homeDir,
+    TMPDIR: tempRoot,
+    TEMP: tempRoot,
+    TMP: tempRoot,
+    GOCACHE: goCacheDir,
+  };
+
+  if (isWindows) {
+    env.LOCALAPPDATA = process.env.LOCALAPPDATA || tempRoot;
+    env.USERPROFILE = homeDir;
+  }
+
+  for (const [key, value] of Object.entries(overrides)) {
+    env[key] = value;
+  }
+
+  return env;
+}
+
+function killProcessTree(child: ChildProcessWithoutNullStreams) {
+  const { pid } = child;
+  if (!pid) {
+    return;
+  }
+
+  if (process.platform === "win32") {
+    spawn("taskkill", ["/pid", String(pid), "/T", "/F"], {
+      stdio: "ignore",
+      windowsHide: true,
+    });
+    return;
+  }
+
+  try {
+    process.kill(-pid, "SIGKILL");
+  } catch {
+    try {
+      child.kill("SIGKILL");
+    } catch {
+      // Ignore best-effort cleanup errors.
+    }
+  }
+}
+
 function runProcess({
   command,
   args,
@@ -54,25 +123,61 @@ function runProcess({
   console.log(`Executing: ${command} ${args.join(" ")} (timeout: ${timeoutMs}ms)`);
 
   return new Promise((resolve, reject) => {
+    let settled = false;
     const child = spawn(command, args, {
       cwd,
-      env,
-      timeout: timeoutMs,
+      env: env || buildSandboxEnv(),
+      detached: process.platform !== "win32",
+      stdio: "pipe",
+      windowsHide: true,
     });
 
     let stdout = "";
     let stderr = "";
+    let outputBytes = 0;
+
+    const settle = (error?: string, value?: string) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      clearTimeout(timeoutHandle);
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve(value || "");
+    };
+
+    const terminate = (reason: string) => {
+      killProcessTree(child);
+      settle(reason);
+    };
+
+    const timeoutHandle = setTimeout(() => {
+      terminate(`Execution timed out (${timeoutMs}ms limit)`);
+    }, timeoutMs);
+
+    const appendOutput = (chunk: Buffer, isStdErr: boolean) => {
+      const text = chunk.toString();
+      outputBytes += Buffer.byteLength(text);
+      if (outputBytes > MAX_OUTPUT_BYTES) {
+        terminate(`Output exceeded ${MAX_OUTPUT_BYTES / 1024}KB limit`);
+        return;
+      }
+      if (isStdErr) {
+        stderr += text;
+      } else {
+        stdout += text;
+      }
+    };
 
     child.stdout.on("data", (chunk) => {
-      stdout += chunk.toString();
-      if (stdout.length > MAX_OUTPUT_BYTES) {
-        child.kill("SIGTERM");
-        reject(`Output exceeded ${MAX_OUTPUT_BYTES / 1024}KB limit`);
-      }
+      appendOutput(chunk as Buffer, false);
     });
 
     child.stderr.on("data", (chunk) => {
-      stderr += chunk.toString();
+      appendOutput(chunk as Buffer, true);
     });
 
     if (stdin) {
@@ -81,19 +186,22 @@ function runProcess({
     child.stdin.end();
 
     child.on("error", (error) => {
-      reject(error.message);
+      settle(error.message);
     });
 
     child.on("close", (code, signal) => {
+      if (settled) {
+        return;
+      }
       if (signal === "SIGTERM" || signal === "SIGKILL") {
-        reject(`Execution timed out (${timeoutMs}ms limit)`);
+        settle(`Execution terminated by signal ${signal}`);
         return;
       }
       if (code !== 0) {
-        reject(stderr || `Process exited with code ${code}`);
+        settle(stripAnsiCodes(stderr) || `Process exited with code ${code}`);
         return;
       }
-      resolve(stripAnsiCodes(stdout));
+      settle(undefined, stripAnsiCodes(stdout || stderr));
     });
   });
 }
@@ -104,12 +212,15 @@ async function runCompiledLanguage(
   executablePath: string,
   timeoutMs: number,
   stdin: string,
+  sourceDir: string,
 ) {
   const compiler = resolveCommand(compilerCandidates, "Compiler");
   await runProcess({
     command: compiler,
     args: compileArgs,
     timeoutMs,
+    cwd: sourceDir,
+    env: buildSandboxEnv(),
   });
 
   return runProcess({
@@ -117,6 +228,124 @@ async function runCompiledLanguage(
     args: [],
     timeoutMs,
     stdin,
+    cwd: sourceDir,
+    env: buildSandboxEnv(),
+  });
+}
+
+interface JavaScriptSandboxResult {
+  ok: boolean;
+  output?: string;
+  error?: string;
+}
+
+interface WorkerRuntimeOptions {
+  filename: string;
+  execArgv?: string[];
+}
+
+function resolveTsNodeRegisterPath(): string | null {
+  const candidates = ["ts-node/register/transpile-only", "ts-node/register"];
+  for (const candidate of candidates) {
+    try {
+      return require.resolve(candidate);
+    } catch {
+      // try next candidate
+    }
+  }
+  return null;
+}
+
+function resolveJavaScriptWorkerRuntime(): WorkerRuntimeOptions {
+  if (fs.existsSync(JS_WORKER_FILE_JS)) {
+    return {
+      filename: JS_WORKER_FILE_JS,
+    };
+  }
+
+  if (fs.existsSync(JS_WORKER_FILE_TS)) {
+    const tsNodeRegister = resolveTsNodeRegisterPath();
+    if (!tsNodeRegister) {
+      throw new Error(
+        "JavaScript sandbox worker (.ts) found but ts-node register hook is unavailable. Run a build or install ts-node.",
+      );
+    }
+
+    return {
+      filename: JS_WORKER_FILE_TS,
+      execArgv: ["-r", tsNodeRegister],
+    };
+  }
+
+  throw new Error(
+    `JavaScript sandbox worker not found. Expected one of: ${JS_WORKER_FILE_JS} or ${JS_WORKER_FILE_TS}`,
+  );
+}
+
+function runJavaScriptInSandbox(
+  filePath: string,
+  stdin: string,
+  timeoutMs: number,
+  memoryMb: number,
+): Promise<string> {
+  const code = fs.readFileSync(filePath, "utf8");
+  const workerRuntime = resolveJavaScriptWorkerRuntime();
+
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const worker = new Worker(workerRuntime.filename, {
+      workerData: {
+        code,
+        stdin,
+        timeoutMs,
+        outputLimitBytes: MAX_OUTPUT_BYTES,
+      },
+      execArgv: workerRuntime.execArgv,
+      resourceLimits: {
+        maxOldGenerationSizeMb: Math.max(32, Math.min(memoryMb, 256)),
+      },
+    });
+
+    const settle = (error?: string, value?: string) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      clearTimeout(timeoutHandle);
+      worker.removeAllListeners();
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve(value || "");
+    };
+
+    const timeoutHandle = setTimeout(() => {
+      worker
+        .terminate()
+        .then(() => settle(`Execution timed out (${timeoutMs}ms limit)`))
+        .catch(() => settle(`Execution timed out (${timeoutMs}ms limit)`));
+    }, timeoutMs + 250);
+
+    worker.on("message", (message: JavaScriptSandboxResult) => {
+      if (!message || message.ok !== true) {
+        settle(message?.error || "JavaScript sandbox execution failed");
+        return;
+      }
+      settle(undefined, stripAnsiCodes(message.output || ""));
+    });
+
+    worker.on("error", (error: Error) => {
+      settle(error.message || "JavaScript sandbox worker error");
+    });
+
+    worker.on("exit", (code) => {
+      if (!settled && code !== 0) {
+        settle(
+          `JavaScript sandbox exited with code ${code} (possible memory limit hit at ${memoryMb}MB)`,
+        );
+      }
+    });
   });
 }
 
@@ -132,32 +361,32 @@ export default function executeCode(
   options: ExecutionOptions = {},
 ): Promise<string> {
   const { stdin = "", timeoutMs = 5000, memoryMb = 128 } = options;
+  const safeTimeoutMs = Math.min(
+    Math.max(Math.floor(Number.isFinite(timeoutMs) ? timeoutMs : 5000), MIN_TIMEOUT_MS),
+    MAX_TIMEOUT_MS,
+  );
+  const safeMemoryMb = Math.min(
+    Math.max(Math.floor(Number.isFinite(memoryMb) ? memoryMb : 128), MIN_MEMORY_MB),
+    MAX_MEMORY_MB,
+  );
   const lang = language.toLowerCase();
   const fileName = path.basename(filePath, path.extname(filePath));
   const sourceDir = path.dirname(filePath);
 
   switch (lang) {
     case "javascript": {
-      const nodeCommand = resolveCommand(["node"], "Node.js");
-      return runProcess({
-        command: nodeCommand,
-        args: [filePath],
-        timeoutMs,
-        stdin,
-        env: {
-          ...process.env,
-          NODE_OPTIONS: `--max-old-space-size=${memoryMb}`,
-        },
-      });
+      return runJavaScriptInSandbox(filePath, stdin, safeTimeoutMs, safeMemoryMb);
     }
     case "python": {
       const pythonCommand = resolveCommand(["python3", "python", "py"], "Python");
-      const args = pythonCommand === "py" ? ["-3", filePath] : [filePath];
+      const args = pythonCommand === "py" ? ["-3", "-I", filePath] : ["-I", filePath];
       return runProcess({
         command: pythonCommand,
         args,
-        timeoutMs,
+        timeoutMs: safeTimeoutMs,
         stdin,
+        cwd: sourceDir,
+        env: buildSandboxEnv(),
       });
     }
     case "java": {
@@ -166,42 +395,46 @@ export default function executeCode(
       return runProcess({
         command: javacCommand,
         args: [filePath],
-        timeoutMs,
+        timeoutMs: safeTimeoutMs,
         cwd: sourceDir,
+        env: buildSandboxEnv(),
       }).then(() =>
         runProcess({
           command: javaCommand,
-          args: ["-cp", sourceDir, fileName],
-          timeoutMs,
+          args: [`-Xmx${safeMemoryMb}m`, "-cp", sourceDir, fileName],
+          timeoutMs: safeTimeoutMs,
           stdin,
           cwd: sourceDir,
+          env: buildSandboxEnv(),
         }),
       );
     }
     case "cpp": {
       const executablePath = path.join(
-        OUTPUT_DIR,
+        sourceDir,
         `${fileName}${process.platform === "win32" ? ".exe" : ".out"}`,
       );
       return runCompiledLanguage(
         ["g++", "clang++"],
         [filePath, "-o", executablePath],
         executablePath,
-        timeoutMs,
+        safeTimeoutMs,
         stdin,
+        sourceDir,
       );
     }
     case "c": {
       const executablePath = path.join(
-        OUTPUT_DIR,
+        sourceDir,
         `${fileName}${process.platform === "win32" ? ".exe" : ".out"}`,
       );
       return runCompiledLanguage(
         ["gcc", "clang"],
         [filePath, "-o", executablePath],
         executablePath,
-        timeoutMs,
+        safeTimeoutMs,
         stdin,
+        sourceDir,
       );
     }
     case "go": {
@@ -209,18 +442,14 @@ export default function executeCode(
       return runProcess({
         command: goCommand,
         args: ["run", filePath],
-        timeoutMs,
+        timeoutMs: safeTimeoutMs,
         stdin,
+        cwd: sourceDir,
+        env: buildSandboxEnv(),
       });
     }
     default: {
-      const nodeCommand = resolveCommand(["node"], "Node.js");
-      return runProcess({
-        command: nodeCommand,
-        args: [filePath],
-        timeoutMs,
-        stdin,
-      });
+      throw new Error(`Unsupported language: ${language}`);
     }
   }
 }
@@ -236,7 +465,26 @@ export const writeCodeToFile = async (language: string, code: string): Promise<s
 
   const fileName = language.toLowerCase() === "java" ? "Main" : randomUUID();
   const filePath = path.join(jobDir, `${fileName}.${config.extension}`);
-  await fs.promises.writeFile(filePath, code);
+  await fs.promises.writeFile(filePath, code, "utf8");
 
   return filePath;
 };
+
+export async function cleanupCodeArtifacts(filePath: string): Promise<void> {
+  const jobDir = path.dirname(filePath);
+  const retryableCodes = new Set(["EBUSY", "EPERM", "ENOTEMPTY"]);
+  const maxAttempts = 6;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      await fs.promises.rm(jobDir, { recursive: true, force: true });
+      return;
+    } catch (error: any) {
+      const code = error?.code;
+      if (!retryableCodes.has(code) || attempt === maxAttempts) {
+        throw error;
+      }
+      await new Promise((resolve) => setTimeout(resolve, attempt * 80));
+    }
+  }
+}

@@ -25,6 +25,7 @@ export default function WorkspaceLayout() {
 
   const {
     language,
+    languageOptions,
     code,
     output,
     isRunning,
@@ -85,6 +86,7 @@ export default function WorkspaceLayout() {
         <TopNav
           language={language}
           setLanguage={onLanguageChange}
+          languageOptions={languageOptions}
           isRunning={isRunning}
           onRun={runCode}
           isFormatting={isFormatting}

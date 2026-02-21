@@ -85,6 +85,7 @@ Each app supports layered env files:
 Switching flags:
 - Backend: `DEPLOY_ENV=local|cloud` and `RUN_ON_CLOUD=true|false`
 - Frontend: `VITE_RUN_ON_CLOUD=true|false`
+- Security policy: hardened execution is permanently enforced for all supported languages.
 
 Load order at runtime:
 1. `.env.common`
@@ -228,6 +229,21 @@ Web (`apps/web` / Cloudflare Pages):
 2. confirm chat syncs
 3. run JavaScript/Python and check output appears
 4. verify socket status shows connected
+
+## Security Regression Tests
+
+Runner security tests include:
+- multi-language basic execution checks (JS/Python/Java/C++/C/Go, auto-skipped if runtime missing)
+- JavaScript sandbox checks (`process`/`require` hidden)
+- timeout bomb check (infinite loop termination)
+- output bomb check (output cap enforcement)
+- environment leak check (sanitized env in Python process)
+
+Run:
+
+```bash
+npm --prefix apps/runner run test:security
+```
 
 ## Troubleshooting
 

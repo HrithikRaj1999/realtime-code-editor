@@ -71,15 +71,20 @@ io.on("connection", (socket) => {
   });
 
   // When a user is leaving the room
-  socket.on(ACTIONS.DISCONNECTING, () => SOCKET_ACTION_PAIR[ACTIONS.DISCONNECTING](socket));
+  socket.on(ACTIONS.DISCONNECTING, () =>
+    SOCKET_ACTION_PAIR[ACTIONS.DISCONNECTING]({ socket, io }),
+  );
 
   // When a user changes code
-  socket.on(ACTIONS.CODE_CHANGE, ({ roomId, code }: { roomId: string; code: string }) => {
-    SOCKET_ACTION_PAIR[ACTIONS.CODE_CHANGE]({ io, roomId, code });
-  });
+  socket.on(
+    ACTIONS.CODE_CHANGE,
+    ({ roomId, code, revision }: { roomId: string; code: string; revision?: number }) => {
+      SOCKET_ACTION_PAIR[ACTIONS.CODE_CHANGE]({ io, socket, roomId, code, revision });
+    },
+  );
 
   socket.on(ACTIONS.LEAVE, () => {
-    SOCKET_ACTION_PAIR[ACTIONS.LEAVE](socket);
+    SOCKET_ACTION_PAIR[ACTIONS.LEAVE]({ socket, io });
   });
 
   // NOTE: Output is now server-originated only (from Redis job-updates).

@@ -17,6 +17,7 @@ import {
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { ParticipantsList } from "./ParticipantsList";
+import type { LanguageOption } from "../features/workspace/constants";
 
 interface Participant {
   socketId: string;
@@ -26,6 +27,7 @@ interface Participant {
 export interface TopNavProps {
   language: string;
   setLanguage: (lang: string) => void;
+  languageOptions: LanguageOption[];
   isRunning: boolean;
   onRun: () => void;
   theme: string;
@@ -42,6 +44,7 @@ export interface TopNavProps {
 export function TopNav({
   language,
   setLanguage,
+  languageOptions,
   isRunning,
   onRun,
   theme,
@@ -132,11 +135,11 @@ export function TopNav({
             onChange={(e) => setLanguage(e.target.value)}
             className="appearance-none bg-[var(--bg-input)] border border-[var(--border)] rounded-lg px-3 py-1.5 pr-7 text-[12px] font-medium text-[var(--text-secondary)] outline-none hover:border-[var(--border-hover)] focus:ring-1 focus:ring-[var(--accent)]/40 transition-all cursor-pointer"
           >
-            <option value="javascript">JavaScript</option>
-            <option value="python">Python</option>
-            <option value="java">Java</option>
-            <option value="cpp">C++</option>
-            <option value="go">Go</option>
+            {languageOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
           <ChevronDown className="w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-faint)] pointer-events-none" />
         </div>

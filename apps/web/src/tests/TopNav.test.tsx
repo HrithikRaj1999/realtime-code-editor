@@ -25,11 +25,14 @@ vi.mock("../components/ParticipantsList", () => ({
   ParticipantsList: () => <span data-testid="participants" />,
 }));
 
+const languageOptions = [{ value: "javascript", label: "JavaScript" }];
+
 describe("TopNav Component", () => {
   it("renders correctly", () => {
     const props = {
       language: "javascript",
       setLanguage: vi.fn(),
+      languageOptions,
       isRunning: false,
       onRun: vi.fn(),
       theme: "dark",
@@ -47,6 +50,7 @@ describe("TopNav Component", () => {
     const props = {
       language: "javascript",
       setLanguage: vi.fn(),
+      languageOptions,
       isRunning: false,
       onRun,
       theme: "dark",
@@ -63,6 +67,7 @@ describe("TopNav Component", () => {
     const props = {
       language: "javascript",
       setLanguage: vi.fn(),
+      languageOptions,
       isRunning: true,
       onRun: vi.fn(),
       theme: "dark",

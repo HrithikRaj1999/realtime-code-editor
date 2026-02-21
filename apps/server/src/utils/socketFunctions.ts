@@ -11,6 +11,7 @@ import {
 } from "./types";
 
 const socketDict = SocketIdManager.getInstance();
+const roomCodeState = new Map<string, { code: string; revision: number; updatedAt: number }>();
 
 export const getAllClients = (io: any, roomId: string) => {
   return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map(
@@ -20,6 +21,20 @@ export const getAllClients = (io: any, roomId: string) => {
     }),
   );
 };
+
+function clearRoomStateIfEmpty(io: any, roomId: string) {
+  const clients = io?.sockets?.adapter?.rooms?.get(roomId);
+  if (!clients || clients.size === 0) {
+    roomCodeState.delete(roomId);
+  }
+}
+
+function toRevisionNumber(value: unknown): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return null;
+  }
+  return Math.max(1, Math.floor(value));
+}
 
 export const SOCKET_ACTION_PAIR: PairType = {
   [ACTIONS.JOIN]: ({ socket, roomId, username, io }: JoinArgs) => {
@@ -32,25 +47,37 @@ export const SOCKET_ACTION_PAIR: PairType = {
         socketId: socket.id,
         clients,
       });
+
+      const roomState = roomCodeState.get(roomId);
+      if (roomState) {
+        socket.emit(ACTIONS.SYNC_CODE, {
+          code: roomState.code,
+          revision: roomState.revision,
+        });
+      }
     }
   },
 
-  [ACTIONS.LEAVE]: (socket: AppSocket) => {
+  [ACTIONS.LEAVE]: ({ socket, io }: { socket: AppSocket; io: any }) => {
     if (socket) {
       const rooms = [...socket.rooms];
       rooms.forEach((roomId) => {
+        if (roomId === socket.id) {
+          return;
+        }
         console.log(`${socketDict.getUserName(socket.id)} is disconnected`);
         socket.to(roomId).emit(ACTIONS.DISCONNECTED, {
           socketId: socket.id,
           username: socketDict.getUserName(socket.id),
         });
         socket.leave(roomId);
+        clearRoomStateIfEmpty(io, roomId);
       });
       socketDict.removeUser(socket.id);
     }
   },
 
-  [ACTIONS.DISCONNECTING]: (socket: AppSocket) => {
+  [ACTIONS.DISCONNECTING]: ({ socket, io }: { socket: AppSocket; io: any }) => {
     const rooms = [...socket.rooms];
     rooms.forEach((roomId) => {
       if (roomId !== socket.id) {
@@ -61,13 +88,44 @@ export const SOCKET_ACTION_PAIR: PairType = {
           socketId: socket.id,
           username: socketDict.getUserName(socket.id),
         });
+        setTimeout(() => clearRoomStateIfEmpty(io, roomId), 0);
       }
     });
     socketDict.removeUser(socket.id);
   },
 
-  [ACTIONS.CODE_CHANGE]: ({ io, roomId, code }: CodeChangeArgs) => {
-    io?.to(roomId).emit(ACTIONS.CODE_CHANGE, code);
+  [ACTIONS.CODE_CHANGE]: ({ io, socket, roomId, code, revision }: CodeChangeArgs) => {
+    if (!io || !socket || !roomId || typeof code !== "string") {
+      return;
+    }
+
+    const incomingRevision = toRevisionNumber(revision);
+    const previous = roomCodeState.get(roomId);
+    if (
+      previous &&
+      incomingRevision !== null &&
+      incomingRevision <= previous.revision &&
+      code !== previous.code
+    ) {
+      return;
+    }
+
+    const nextRevision =
+      incomingRevision !== null
+        ? Math.max(incomingRevision, (previous?.revision || 0) + 1)
+        : (previous?.revision || 0) + 1;
+
+    roomCodeState.set(roomId, {
+      code,
+      revision: nextRevision,
+      updatedAt: Date.now(),
+    });
+
+    // Broadcast only to peers to avoid sender echo/render loops.
+    socket.to(roomId).emit(ACTIONS.CODE_CHANGE, {
+      code,
+      revision: nextRevision,
+    });
   },
 
   // OUTPUT_CHANGE: now only server-originated (from Redis job-updates).

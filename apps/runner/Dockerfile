@@ -31,4 +31,6 @@ RUN mkdir -p /tmp/code-exec /app/codes /app/output && \
 # Switch to non-root user
 USER runner
 
+ENV NODE_OPTIONS=--max-old-space-size=384
+
 CMD ["npm", "run", "start"]

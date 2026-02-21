@@ -1,0 +1,77 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="50%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+    <!-- Glow effect -->
+    <radialGradient id="glow" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.18)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </radialGradient>
+    <!-- Subtle inner shadow -->
+    <filter id="innerShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8" result="blur"/>
+      <feOffset dx="0" dy="4"/>
+      <feComposite in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1"/>
+      <feFlood flood-color="#1E1B4B" flood-opacity="0.4"/>
+      <feComposite in2="SourceGraphic" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- Drop shadow for the icon elements -->
+    <filter id="dropShadow">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#1E1B4B" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect width="512" height="512" rx="108" fill="url(#bgGrad)"/>
+  
+  <!-- Subtle glow overlay -->
+  <rect width="512" height="512" rx="108" fill="url(#glow)"/>
+
+  <!-- Code bracket left  < -->
+  <path
+    d="M195 168L115 256L195 344"
+    stroke="white"
+    stroke-width="38"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+    filter="url(#dropShadow)"
+    opacity="0.92"
+  />
+
+  <!-- Code bracket right  > -->
+  <path
+    d="M317 168L397 256L317 344"
+    stroke="white"
+    stroke-width="38"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+    filter="url(#dropShadow)"
+    opacity="0.92"
+  />
+
+  <!-- Slash / in the center -->
+  <line
+    x1="282" y1="148"
+    x2="230" y2="364"
+    stroke="#C4B5FD"
+    stroke-width="32"
+    stroke-linecap="round"
+    filter="url(#dropShadow)"
+    opacity="0.85"
+  />
+
+  <!-- Streaming dots - collaboration indicator -->
+  <circle cx="256" cy="420" r="10" fill="white" opacity="0.9"/>
+  <circle cx="296" cy="420" r="8" fill="white" opacity="0.6"/>
+  <circle cx="328" cy="420" r="6" fill="white" opacity="0.35"/>
+</svg>

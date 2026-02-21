@@ -27,11 +27,32 @@ interface ChatMessage {
   timestamp: number;
 }
 
+interface CodeUpdate {
+  code: string;
+  revision?: number;
+}
+
 interface UseSocketOptions {
   roomId: string;
   username: string;
-  onCodeChange?: (code: string) => void;
+  onCodeChange?: (update: CodeUpdate) => void;
   onOutputChange?: (data: { output: string; status: string }) => void;
+}
+
+function normalizeCodePayload(payload: unknown): CodeUpdate | null {
+  if (typeof payload === "string") {
+    return { code: payload };
+  }
+
+  if (payload && typeof payload === "object" && typeof (payload as CodeUpdate).code === "string") {
+    const revisionValue = (payload as CodeUpdate).revision;
+    return {
+      code: (payload as CodeUpdate).code,
+      revision: typeof revisionValue === "number" && Number.isFinite(revisionValue) ? revisionValue : undefined,
+    };
+  }
+
+  return null;
 }
 
 export function useSocket({ roomId, username, onCodeChange, onOutputChange }: UseSocketOptions) {
@@ -68,8 +89,18 @@ export function useSocket({ roomId, username, onCodeChange, onOutputChange }: Us
     });
 
     // Code changes from other users
-    socket.on(ACTIONS.CODE_CHANGE, (code: string) => {
-      onCodeChange?.(code);
+    socket.on(ACTIONS.CODE_CHANGE, (payload: unknown) => {
+      const update = normalizeCodePayload(payload);
+      if (update) {
+        onCodeChange?.(update);
+      }
+    });
+
+    socket.on(ACTIONS.SYNC_CODE, (payload: unknown) => {
+      const update = normalizeCodePayload(payload);
+      if (update) {
+        onCodeChange?.(update);
+      }
     });
 
     // Server-originated output (from runner via Redis)
@@ -96,8 +127,8 @@ export function useSocket({ roomId, username, onCodeChange, onOutputChange }: Us
   }, [roomId, username]);
 
   const sendCodeChange = useCallback(
-    (code: string) => {
-      socketRef.current?.emit(ACTIONS.CODE_CHANGE, { roomId, code });
+    (code: string, revision?: number) => {
+      socketRef.current?.emit(ACTIONS.CODE_CHANGE, { roomId, code, revision });
     },
     [roomId],
   );

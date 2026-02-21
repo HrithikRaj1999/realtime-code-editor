@@ -22,14 +22,16 @@ export interface JoinArgs {
 export interface CodeChangeArgs {
   roomId: string;
   code: string;
+  revision?: number;
   io: any;
+  socket: AppSocket;
 }
 
 export interface OutputChangeArgs {
   roomId: string;
   output: string;
   io: any;
-  socket: AppSocket;
+  socket?: AppSocket;
 }
 
 export interface TypingArgs {

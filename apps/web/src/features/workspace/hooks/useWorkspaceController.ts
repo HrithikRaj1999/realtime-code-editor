@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import type { FormatResult } from "../../../components/CodeEditorV2";
 import { useSocket } from "../../../hooks/useSocket";
 import { CODE_TEMPLATES } from "../../../lib/codeTemplates";
 import {
+  ALLOWED_LANGUAGE_OPTIONS,
   DESKTOP_BREAKPOINT,
   FONT_SIZE_DEFAULT,
   FONT_SIZE_MAX,
@@ -17,13 +18,17 @@ interface UseWorkspaceControllerOptions {
   username: string;
 }
 
+const CODE_EMIT_DEBOUNCE_MS = 75;
+
 function getCodeTemplate(language: string): string {
   return CODE_TEMPLATES[language] || CODE_TEMPLATES.javascript;
 }
 
 export function useWorkspaceController({ roomId, username }: UseWorkspaceControllerOptions) {
-  const [language, setLanguage] = useState("javascript");
-  const [code, setCode] = useState(CODE_TEMPLATES.javascript);
+  const languageOptions = useMemo(() => ALLOWED_LANGUAGE_OPTIONS, []);
+  const defaultLanguage = languageOptions[0]?.value || "javascript";
+  const [language, setLanguage] = useState(defaultLanguage);
+  const [code, setCode] = useState(getCodeTemplate(defaultLanguage));
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [isFormatting, setIsFormatting] = useState(false);
@@ -38,9 +43,35 @@ export function useWorkspaceController({ roomId, username }: UseWorkspaceControl
   );
 
   const codeRef = useRef(code);
+  const languageRef = useRef(language);
+  const codeRevisionRef = useRef(0);
+  const pendingCodeEmitRef = useRef<{ code: string; revision: number } | null>(null);
+  const codeEmitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     codeRef.current = code;
   }, [code]);
+
+  useEffect(() => {
+    languageRef.current = language;
+  }, [language]);
+
+  useEffect(() => {
+    if (codeEmitTimerRef.current) {
+      clearTimeout(codeEmitTimerRef.current);
+      codeEmitTimerRef.current = null;
+    }
+    pendingCodeEmitRef.current = null;
+    codeRevisionRef.current = 0;
+
+    const nextLanguage = languageOptions.some((option) => option.value === languageRef.current)
+      ? languageRef.current
+      : defaultLanguage;
+    const template = getCodeTemplate(nextLanguage);
+    setCode(template);
+    codeRef.current = template;
+    setLanguage(nextLanguage);
+  }, [roomId, defaultLanguage, languageOptions]);
 
   useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth >= DESKTOP_BREAKPOINT);
@@ -48,8 +79,33 @@ export function useWorkspaceController({ roomId, username }: UseWorkspaceControl
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleRemoteCodeChange = useCallback((remoteCode: string) => {
+  const handleRemoteCodeChange = useCallback((update: { code: string; revision?: number }) => {
+    const remoteCode = update?.code;
+    if (typeof remoteCode !== "string") {
+      return;
+    }
+
+    const incomingRevision =
+      typeof update.revision === "number" && Number.isFinite(update.revision)
+        ? Math.max(1, Math.floor(update.revision))
+        : null;
+
+    if (incomingRevision !== null && incomingRevision <= codeRevisionRef.current) {
+      return;
+    }
+
+    if (remoteCode === codeRef.current) {
+      if (incomingRevision !== null) {
+        codeRevisionRef.current = Math.max(codeRevisionRef.current, incomingRevision);
+      }
+      return;
+    }
+
     setCode(remoteCode);
+    codeRef.current = remoteCode;
+    if (incomingRevision !== null) {
+      codeRevisionRef.current = incomingRevision;
+    }
   }, []);
 
   const handleOutputChange = useCallback((data: OutputUpdate) => {
@@ -76,23 +132,88 @@ export function useWorkspaceController({ roomId, username }: UseWorkspaceControl
     onOutputChange: handleOutputChange,
   });
 
+  const flushPendingCodeEmit = useCallback(() => {
+    if (codeEmitTimerRef.current) {
+      clearTimeout(codeEmitTimerRef.current);
+      codeEmitTimerRef.current = null;
+    }
+
+    const pending = pendingCodeEmitRef.current;
+    if (!pending) {
+      return;
+    }
+
+    pendingCodeEmitRef.current = null;
+    sendCodeChange(pending.code, pending.revision);
+  }, [sendCodeChange]);
+
+  const scheduleCodeEmit = useCallback(
+    (nextCode: string, revision: number) => {
+      pendingCodeEmitRef.current = {
+        code: nextCode,
+        revision,
+      };
+
+      if (codeEmitTimerRef.current) {
+        clearTimeout(codeEmitTimerRef.current);
+      }
+
+      codeEmitTimerRef.current = setTimeout(() => {
+        flushPendingCodeEmit();
+      }, CODE_EMIT_DEBOUNCE_MS);
+    },
+    [flushPendingCodeEmit],
+  );
+
+  useEffect(() => {
+    if (languageOptions.some((option) => option.value === language)) {
+      return;
+    }
+    const fallbackLanguage = languageOptions[0]?.value || "javascript";
+    setLanguage(fallbackLanguage);
+    const template = getCodeTemplate(fallbackLanguage);
+    setCode(template);
+    codeRef.current = template;
+    codeRevisionRef.current += 1;
+    scheduleCodeEmit(template, codeRevisionRef.current);
+  }, [language, languageOptions, scheduleCodeEmit]);
+
+  useEffect(() => {
+    return () => {
+      if (codeEmitTimerRef.current) {
+        clearTimeout(codeEmitTimerRef.current);
+        codeEmitTimerRef.current = null;
+      }
+      pendingCodeEmitRef.current = null;
+    };
+  }, []);
+
   const onLanguageChange = useCallback(
     (nextLanguage: string) => {
       setLanguage(nextLanguage);
       const template = getCodeTemplate(nextLanguage);
       setCode(template);
-      sendCodeChange(template);
+      codeRef.current = template;
+      const nextRevision = codeRevisionRef.current + 1;
+      codeRevisionRef.current = nextRevision;
+      scheduleCodeEmit(template, nextRevision);
     },
-    [sendCodeChange],
+    [scheduleCodeEmit],
   );
 
   const onCodeChange = useCallback(
     (nextCode: string) => {
+      if (nextCode === codeRef.current) {
+        return;
+      }
       setCode(nextCode);
-      sendCodeChange(nextCode);
+      codeRef.current = nextCode;
+      const nextRevision = codeRevisionRef.current + 1;
+      codeRevisionRef.current = nextRevision;
+      scheduleCodeEmit(nextCode, nextRevision);
       sendTyping();
     },
-    [sendCodeChange, sendTyping],
+    [scheduleCodeEmit, sendTyping],
   );
 
   const runCode = useCallback(async () => {
@@ -168,6 +289,7 @@ export function useWorkspaceController({ roomId, username }: UseWorkspaceControl
 
   return {
     language,
+    languageOptions,
     code,
     output,
     isRunning,

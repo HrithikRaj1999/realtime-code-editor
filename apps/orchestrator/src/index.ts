@@ -14,6 +14,9 @@ app.use(cors());
 const SUPPORTED_LANGUAGES = ["javascript", "python", "java", "cpp", "go", "c"];
 const MAX_TIMEOUT_MS = 10000;
 const MAX_MEMORY_MB = 256;
+const MIN_TIMEOUT_MS = 250;
+const MIN_MEMORY_MB = 32;
+const MAX_STDIN_BYTES = 10 * 1024;
 const submissionQueueName = process.env.SUBMISSION_QUEUE_NAME || "submission";
 
 const redisOptions = buildRedisOptions();
@@ -24,6 +27,7 @@ submissionQueue.on("error", (err) => {
 });
 console.log(`Redis target: ${redisOptions.host}:${redisOptions.port}`);
 console.log(`Queue target: ${submissionQueueName}`);
+console.log("Security policy: hardened multi-language execution (always enabled).");
 
 // Rate limiting: simple in-memory counter (replace with Redis in production)
 const rateLimits = new Map<string, { count: number; resetAt: number }>();
@@ -54,13 +58,20 @@ app.post("/run", async (req: Request, res: Response) => {
   if (!language || typeof language !== "string") {
     return res.status(400).json({ error: "Language is required" });
   }
-  if (!SUPPORTED_LANGUAGES.includes(language.toLowerCase())) {
+  const normalizedLanguage = language.toLowerCase();
+  if (!SUPPORTED_LANGUAGES.includes(normalizedLanguage)) {
     return res.status(400).json({
       error: `Unsupported language: ${language}. Supported: ${SUPPORTED_LANGUAGES.join(", ")}`,
     });
   }
   if (code.length > 50000) {
     return res.status(400).json({ error: "Code exceeds maximum length (50KB)" });
+  }
+  if (stdin !== undefined && typeof stdin !== "string") {
+    return res.status(400).json({ error: "stdin must be a string" });
+  }
+  if (typeof stdin === "string" && Buffer.byteLength(stdin, "utf8") > MAX_STDIN_BYTES) {
+    return res.status(400).json({ error: "stdin exceeds maximum size (10KB)" });
   }
 
   // Rate limiting by IP
@@ -70,17 +81,16 @@ app.post("/run", async (req: Request, res: Response) => {
   }
 
   const jobId = uuidv4();
-  const effectiveTimeout = Math.min(
-    typeof timeoutMs === "number" ? timeoutMs : 5000,
-    MAX_TIMEOUT_MS,
-  );
-  const effectiveMemory = Math.min(typeof memoryMb === "number" ? memoryMb : 128, MAX_MEMORY_MB);
+  const requestedTimeout = Number.isFinite(timeoutMs) ? Number(timeoutMs) : 5000;
+  const requestedMemory = Number.isFinite(memoryMb) ? Number(memoryMb) : 128;
+  const effectiveTimeout = Math.min(Math.max(Math.floor(requestedTimeout), MIN_TIMEOUT_MS), MAX_TIMEOUT_MS);
+  const effectiveMemory = Math.min(Math.max(Math.floor(requestedMemory), MIN_MEMORY_MB), MAX_MEMORY_MB);
 
   try {
     await submissionQueue.add("run-code", {
       jobId,
       code,
-      language: language.toLowerCase(),
+      language: normalizedLanguage,
       roomId: roomId || null,
       stdin: stdin || "",
       timeoutMs: effectiveTimeout,
